@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { ZeroLogo, HistoryIcon, ArchiveIcon } from './Icons';
 import { safeHaptics } from '../utils/haptics';
@@ -10,6 +10,7 @@ interface HeaderBarProps {
   onOpenArchive: () => void;
   noteContent: string;
   hapticsEnabled?: boolean;
+  isHovered?: boolean;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -18,6 +19,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onOpenArchive,
   noteContent,
   hapticsEnabled = true,
+  isHovered = true,
 }) => {
   const { theme } = useTheme();
 
@@ -30,7 +32,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const hasContent = noteContent.trim().length > 0;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          opacity: isHovered ? 1 : 0.05,
+          ...(Platform.OS === 'web'
+            ? ({
+                transition: 'opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+              } as any)
+            : {}),
+        },
+      ]}
+    >
       {/* Left: Minimal Ø Logo (Tapping opens Settings & Info) */}
       <TouchableOpacity
         onPress={() => {

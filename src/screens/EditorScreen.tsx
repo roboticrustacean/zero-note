@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useNotes } from '../context/NotesContext';
@@ -25,6 +25,8 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
     preferences,
   } = useNotes();
 
+  const [isHovered, setIsHovered] = useState(true);
+
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
@@ -36,13 +38,20 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.canvas }]}
+      {...({
+        onMouseEnter: () => setIsHovered(true),
+        onMouseLeave: () => setIsHovered(false),
+      } as any)}
+    >
       <HeaderBar
         onArchive={archiveCurrentNote}
         onOpenSettings={onOpenSettings}
         onOpenArchive={onOpenArchive}
         noteContent={activeNote.content}
         hapticsEnabled={preferences.hapticsEnabled}
+        isHovered={isHovered}
       />
 
       <View style={styles.editorArea}>
@@ -56,6 +65,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
       <FooterBar
         stats={stats}
         visible={preferences.showWordCount}
+        isHovered={isHovered}
       />
     </SafeAreaView>
   );

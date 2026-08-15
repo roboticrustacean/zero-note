@@ -29,19 +29,86 @@ export const Editor: React.FC<EditorProps> = ({
   const inputRef = useRef<TextInput>(null);
   const lastTapRef = useRef<number>(0);
   const lastSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+  const isTogglingRef = useRef<boolean>(false);
+
+  // Detect if cursor position is on or inside a task bracket [ ] or [x]
+  const checkAndToggleBracketAtPos = (pos: number): boolean => {
+    if (isTogglingRef.current) return false;
+
+    const lines = content.split('\n');
+    let charCount = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const lineStart = charCount;
+      const lineEnd = lineStart + line.length;
+
+      if (pos >= lineStart && pos <= lineEnd + 1) {
+        // Line found
+        const match = line.match(/^(\s*[-*]?\s*)\[([ xX])\]\s*(.*)$/);
+        if (match) {
+          const prefixLen = match[1].length;
+          const bracketStart = lineStart + prefixLen; // index of '['
+          const bracketEnd = bracketStart + 3; // index after ']' (e.g. '[ ]' or '[x]')
+
+          // If the click/cursor is directly inside or on the [ ] / [x] block
+          if (pos >= bracketStart && pos <= bracketEnd) {
+            isTogglingRef.current = true;
+            if (hapticsEnabled) safeHaptics.impact();
+
+            const isChecked = match[2].toLowerCase() === 'x';
+            const prefix = match[1] || '- ';
+            let itemText = match[3].trim();
+
+            let newLine = '';
+            if (!isChecked) {
+              // Mark as [x] with dashed strikethrough in place
+              if (!itemText.startsWith('~~') && !itemText.endsWith('~~') && itemText.length > 0) {
+                itemText = `~~${itemText}~~`;
+              }
+              newLine = `${prefix.trimEnd()} [x] ${itemText}`.trim();
+            } else {
+              // Unmark to [ ] and remove dashed strikethrough in place
+              if (itemText.startsWith('~~') && itemText.endsWith('~~')) {
+                itemText = itemText.substring(2, itemText.length - 2);
+              }
+              newLine = `${prefix.trimEnd()} [ ] ${itemText}`.trim();
+            }
+
+            lines[i] = newLine;
+            const updatedContent = lines.join('\n');
+            onChangeContent(updatedContent);
+
+            setTimeout(() => {
+              isTogglingRef.current = false;
+            }, 250);
+
+            return true;
+          }
+        }
+      }
+      charCount = lineEnd + 1;
+    }
+    return false;
+  };
 
   // Handle typing transformations (auto-brackets and auto-dashed strikethrough)
   const handleChangeText = (text: string) => {
-    // 1. Auto-expand [] or [ ] to - [ ]
     let updated = text;
-    if (updated.endsWith('[] ') || updated.endsWith('[ ] ') || updated.includes('\n[] ') || updated.includes('\n[ ] ')) {
+    // 1. Auto-expand [] or [ ] to - [ ]
+    if (
+      updated.endsWith('[] ') ||
+      updated.endsWith('[ ] ') ||
+      updated.includes('\n[] ') ||
+      updated.includes('\n[ ] ')
+    ) {
       updated = updated
         .replace(/(^|\n)\[\]\s/g, '$1- [ ] ')
         .replace(/(^|\n)\[ \]\s/g, '$1- [ ] ')
         .replace(/(^|\n)\[x\]\s/g, '$1- [x] ');
     }
 
-    // 2. Auto-format dashed strikethrough (~~text~~) when [x] is marked or unmarked
+    // 2. Auto-format dashed strikethrough when [x] is typed or changed
     const formatted = formatCheckedLinesInText(updated);
     if (formatted !== text) {
       if (hapticsEnabled) safeHaptics.impact();
@@ -66,9 +133,15 @@ export const Editor: React.FC<EditorProps> = ({
     }
   };
 
-  // Track cursor position
+  // Track cursor position and detect clicks on [ ] whitespace
   const handleSelectionChange = (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-    lastSelectionRef.current = e.nativeEvent.selection;
+    const sel = e.nativeEvent.selection;
+    lastSelectionRef.current = sel;
+
+    // Check if cursor clicked directly into [ ] or [x]
+    if (sel.start === sel.end) {
+      checkAndToggleBracketAtPos(sel.start);
+    }
   };
 
   // Double-tap anywhere on canvas ALWAYS creates a new task line [- [ ] ]
