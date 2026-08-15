@@ -1,18 +1,17 @@
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { EditorScreen } from '../../src/screens/EditorScreen';
 import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('EditorScreen', () => {
-  it('renders editor and allows typing', async () => {
+  it('renders editor with Ø branding and allows typing', async () => {
     const onOpenSettings = jest.fn();
-    const onOpenArchive = jest.fn();
 
     const { findByPlaceholderText, getByTestId } = render(
       <ThemeProvider>
         <NotesProvider>
-          <EditorScreen onOpenSettings={onOpenSettings} onOpenArchive={onOpenArchive} />
+          <EditorScreen onOpenSettings={onOpenSettings} />
         </NotesProvider>
       </ThemeProvider>
     );
@@ -27,10 +26,5 @@ describe('EditorScreen', () => {
     const settingsBtn = getByTestId('btn-settings');
     fireEvent.press(settingsBtn);
     expect(onOpenSettings).toHaveBeenCalled();
-
-    // Test archive history button
-    const historyBtn = getByTestId('btn-history');
-    fireEvent.press(historyBtn);
-    expect(onOpenArchive).toHaveBeenCalled();
   });
 });

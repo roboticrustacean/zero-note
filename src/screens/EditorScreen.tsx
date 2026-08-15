@@ -8,13 +8,9 @@ import { FooterBar } from '../components/FooterBar';
 
 interface EditorScreenProps {
   onOpenSettings: () => void;
-  onOpenArchive: () => void;
 }
 
-export const EditorScreen: React.FC<EditorScreenProps> = ({
-  onOpenSettings,
-  onOpenArchive,
-}) => {
+export const EditorScreen: React.FC<EditorScreenProps> = ({ onOpenSettings }) => {
   const { theme } = useTheme();
   const {
     activeNote,
@@ -23,7 +19,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
     isSaving,
     updateActiveNoteContent,
     togglePinActiveNote,
-    archiveCurrentNote,
+    clearCurrentNote,
     preferences,
   } = useNotes();
 
@@ -42,9 +38,8 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
       <HeaderBar
         isPinned={activeNote.isPinned}
         onTogglePin={togglePinActiveNote}
-        onArchive={archiveCurrentNote}
+        onClearNote={clearCurrentNote}
         onOpenSettings={onOpenSettings}
-        onOpenArchive={onOpenArchive}
         noteContent={activeNote.content}
         hapticsEnabled={preferences.hapticsEnabled}
       />

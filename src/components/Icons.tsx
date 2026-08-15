@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
 
 interface IconProps {
   size?: number;
@@ -7,7 +7,14 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-export const SettingsIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', strokeWidth = 1.5 }) => (
+export const ZeroLogo: React.FC<IconProps> = ({ size = 22, color = '#141414', strokeWidth = 2.2 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="12" cy="12" r="8" stroke={color} strokeWidth={strokeWidth} />
+    <Line x1="4" y1="20" x2="20" y2="4" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+  </Svg>
+);
+
+export const SettingsIcon: React.FC<IconProps> = ({ size = 20, color = '#141414', strokeWidth = 1.5 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={strokeWidth} />
     <Path
@@ -20,21 +27,9 @@ export const SettingsIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA'
   </Svg>
 );
 
-export const HistoryIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', strokeWidth = 1.5 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"
-      stroke={color}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
 export const PinIcon: React.FC<IconProps & { filled?: boolean }> = ({
   size = 20,
-  color = '#EAEAEA',
+  color = '#141414',
   strokeWidth = 1.5,
   filled = false,
 }) => (
@@ -51,19 +46,7 @@ export const PinIcon: React.FC<IconProps & { filled?: boolean }> = ({
   </Svg>
 );
 
-export const ArchiveIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', strokeWidth = 1.5 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M21 8v13H3V8M1 3h22v5H1V3zM10 12h4"
-      stroke={color}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-export const ShareIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', strokeWidth = 1.5 }) => (
+export const ShareIcon: React.FC<IconProps> = ({ size = 20, color = '#141414', strokeWidth = 1.5 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"
@@ -75,13 +58,7 @@ export const ShareIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', s
   </Svg>
 );
 
-export const CheckIcon: React.FC<IconProps> = ({ size = 14, color = '#EAEAEA', strokeWidth = 2 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M20 6L9 17l-5-5" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
-);
-
-export const TrashIcon: React.FC<IconProps> = ({ size = 18, color = '#EAEAEA', strokeWidth = 1.5 }) => (
+export const TrashIcon: React.FC<IconProps> = ({ size = 18, color = '#141414', strokeWidth = 1.5 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"
@@ -93,28 +70,14 @@ export const TrashIcon: React.FC<IconProps> = ({ size = 18, color = '#EAEAEA', s
   </Svg>
 );
 
-export const CopyIcon: React.FC<IconProps> = ({ size = 18, color = '#EAEAEA', strokeWidth = 1.5 }) => (
+export const CheckIcon: React.FC<IconProps> = ({ size = 14, color = '#141414', strokeWidth = 2.2 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Rect x="9" y="9" width="13" height="13" rx="2" stroke={color} strokeWidth={strokeWidth} />
-    <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke={color} strokeWidth={strokeWidth} />
+    <Path d="M20 6L9 17l-5-5" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-export const CloseIcon: React.FC<IconProps> = ({ size = 20, color = '#EAEAEA', strokeWidth = 1.5 }) => (
+export const CloseIcon: React.FC<IconProps> = ({ size = 20, color = '#141414', strokeWidth = 1.5 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M18 6L6 18M6 6l12 12" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
-  </Svg>
-);
-
-export const RestoreIcon: React.FC<IconProps> = ({ size = 16, color = '#EAEAEA', strokeWidth = 1.5 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-      stroke={color}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <Path d="M3 3v5h5" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );

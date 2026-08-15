@@ -12,9 +12,7 @@ import {
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../theme/ThemeContext';
 import { useNotes } from '../context/NotesContext';
-import { ThemeSelector } from '../components/ThemeSelector';
-import { FontSelector } from '../components/FontSelector';
-import { CloseIcon } from '../components/Icons';
+import { CloseIcon, ZeroLogo } from '../components/Icons';
 import { safeHaptics } from '../utils/haptics';
 
 interface SettingsScreenProps {
@@ -59,7 +57,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
           onPress: async () => {
             const success = await importData(text);
             if (success) {
-              Alert.alert('Import Complete', 'Notes and settings restored successfully.');
+              Alert.alert('Import Complete', 'Note and settings restored successfully.');
             } else {
               Alert.alert('Import Failed', 'The clipboard content could not be parsed as a valid backup.');
             }
@@ -86,21 +84,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
-      {/* Header */}
+      {/* Header with Ø branding */}
       <View style={[styles.header, { borderBottomColor: theme.borderSubtle }]}>
-        <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
-          Preferences
-        </Text>
+        <View style={styles.headerLeft}>
+          <ZeroLogo size={20} color={theme.text} strokeWidth={2} />
+          <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
+            Zero Note
+          </Text>
+        </View>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-settings" activeOpacity={0.6}>
           <CloseIcon size={18} color={theme.textMuted} strokeWidth={1.5} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Appearance */}
-        <ThemeSelector />
-        <FontSelector />
-
         {/* Behavior Toggles */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
@@ -135,11 +132,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Lock Screen & Widget Guide */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            LOCK SCREEN NOTIFICATION
+            LOCK SCREEN PINNING
           </Text>
           <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.infoText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-              Tap the 📌 icon in the top header to keep your current note pinned directly on the Android Lock Screen.
+              Tap the 📌 icon in the top header to keep your single active note pinned on your Android Lock Screen.
             </Text>
           </View>
         </View>
@@ -169,7 +166,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
               activeOpacity={0.7}
             >
               <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
-                Import from Clipboard
+                Import Backup
               </Text>
             </TouchableOpacity>
           </View>
@@ -189,7 +186,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Footer info */}
         <View style={styles.footerInfo}>
           <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            Zero Note · Pure Digital Minimalism
+            Ø · Pure Digital Minimalism
           </Text>
           <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption, marginTop: 4 }]}>
             100% Offline & Encrypted Locally
@@ -211,6 +208,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18,
     borderBottomWidth: 1,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerTitle: {
     fontWeight: '600',

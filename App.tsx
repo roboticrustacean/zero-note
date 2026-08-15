@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { NotesProvider, useNotes } from './src/context/NotesContext';
 import { EditorScreen } from './src/screens/EditorScreen';
-import { ArchiveScreen } from './src/screens/ArchiveScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { FluidModal } from './src/components/FluidModal';
 import { notificationService } from './src/services/notificationService';
@@ -12,7 +11,6 @@ import { notificationService } from './src/services/notificationService';
 const MainApp: React.FC = () => {
   const { theme } = useTheme();
   const { activeNote } = useNotes();
-  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Sync active note to lock screen notification whenever it changes
@@ -33,19 +31,7 @@ const MainApp: React.FC = () => {
       >
         <StatusBar style={theme.statusBar} />
 
-        <EditorScreen
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenArchive={() => setIsArchiveOpen(true)}
-        />
-
-        {/* Fluid Spring Archive Modal */}
-        <FluidModal
-          visible={isArchiveOpen}
-          onClose={() => setIsArchiveOpen(false)}
-          variant="sheet"
-        >
-          <ArchiveScreen onClose={() => setIsArchiveOpen(false)} />
-        </FluidModal>
+        <EditorScreen onOpenSettings={() => setIsSettingsOpen(true)} />
 
         {/* Fluid Spring Settings Modal */}
         <FluidModal

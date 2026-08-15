@@ -26,7 +26,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  initialTheme = 'oled-dark',
+  initialTheme = 'warm-paper',
   initialFont = 'mono',
   initialScale = 'standard',
 }) => {

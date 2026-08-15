@@ -1,15 +1,14 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Share } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Share, Alert } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { SettingsIcon, HistoryIcon, PinIcon, ShareIcon, ArchiveIcon } from './Icons';
+import { ZeroLogo, SettingsIcon, PinIcon, ShareIcon, TrashIcon } from './Icons';
 import { safeHaptics } from '../utils/haptics';
 
 interface HeaderBarProps {
   isPinned: boolean;
   onTogglePin: () => void;
-  onArchive: () => void;
+  onClearNote: () => void;
   onOpenSettings: () => void;
-  onOpenArchive: () => void;
   noteContent: string;
   hapticsEnabled?: boolean;
 }
@@ -17,9 +16,8 @@ interface HeaderBarProps {
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   isPinned,
   onTogglePin,
-  onArchive,
+  onClearNote,
   onOpenSettings,
-  onOpenArchive,
   noteContent,
   hapticsEnabled = true,
 }) => {
@@ -37,6 +35,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   };
 
+  const handleClear = () => {
+    if (!noteContent || noteContent.trim().length === 0) return;
+    triggerHaptic();
+    Alert.alert('Clear Note', 'Are you sure you want to clear your current note?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: onClearNote,
+      },
+    ]);
+  };
+
   const triggerHaptic = () => {
     if (hapticsEnabled) {
       safeHaptics.impact();
@@ -45,59 +56,25 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Left side: Subtle ghost icons for Settings & History */}
+      {/* Left side: Iconic Ø logo mark & app branding */}
       <View style={styles.leftGroup}>
-        <TouchableOpacity
-          onPress={() => {
-            triggerHaptic();
-            onOpenSettings();
-          }}
-          style={styles.ghostButton}
-          accessibilityLabel="Settings"
-          testID="btn-settings"
-          activeOpacity={0.6}
-        >
-          <SettingsIcon size={19} color={theme.textMuted} strokeWidth={1.4} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            triggerHaptic();
-            onOpenArchive();
-          }}
-          style={styles.ghostButton}
-          accessibilityLabel="Archive History"
-          testID="btn-history"
-          activeOpacity={0.6}
-        >
-          <HistoryIcon size={19} color={theme.textMuted} strokeWidth={1.4} />
-        </TouchableOpacity>
+        <View style={styles.logoMarkWrapper} testID="app-logo-mark">
+          <ZeroLogo size={20} color={theme.text} strokeWidth={2} />
+        </View>
+        <Text style={[styles.brandTitle, { color: theme.text, fontFamily }]}>
+          Zero Note
+        </Text>
       </View>
 
-      {/* Right side: Share, Lock Screen Pin, Archive */}
+      {/* Right side: Lock Screen Pin, Share, Clear, Settings */}
       <View style={styles.rightGroup}>
-        {noteContent.trim().length > 0 && (
-          <TouchableOpacity
-            onPress={() => {
-              triggerHaptic();
-              handleShare();
-            }}
-            style={styles.ghostButton}
-            accessibilityLabel="Share note"
-            testID="btn-share"
-            activeOpacity={0.6}
-          >
-            <ShareIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity
           onPress={() => {
             triggerHaptic();
             onTogglePin();
           }}
           style={[
-            styles.pinButton,
+            styles.iconButton,
             isPinned && { backgroundColor: theme.cardActive, borderColor: theme.border },
           ]}
           accessibilityLabel="Pin note to lock screen"
@@ -112,36 +89,44 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           />
         </TouchableOpacity>
 
+        {noteContent.trim().length > 0 && (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                triggerHaptic();
+                handleShare();
+              }}
+              style={styles.iconButton}
+              accessibilityLabel="Share note"
+              testID="btn-share"
+              activeOpacity={0.6}
+            >
+              <ShareIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleClear}
+              style={styles.iconButton}
+              accessibilityLabel="Clear note"
+              testID="btn-clear"
+              activeOpacity={0.6}
+            >
+              <TrashIcon size={17} color={theme.textMuted} strokeWidth={1.4} />
+            </TouchableOpacity>
+          </>
+        )}
+
         <TouchableOpacity
           onPress={() => {
-            if (hapticsEnabled) {
-              safeHaptics.notification();
-            }
-            onArchive();
+            triggerHaptic();
+            onOpenSettings();
           }}
-          style={[
-            styles.archiveBadge,
-            {
-              backgroundColor: noteContent.trim().length > 0 ? theme.card : 'transparent',
-              borderColor: noteContent.trim().length > 0 ? theme.border : 'transparent',
-            },
-          ]}
-          accessibilityLabel="Archive current note"
-          testID="btn-archive"
-          activeOpacity={0.7}
+          style={styles.iconButton}
+          accessibilityLabel="Settings"
+          testID="btn-settings"
+          activeOpacity={0.6}
         >
-          <ArchiveIcon size={15} color={noteContent.trim().length > 0 ? theme.text : theme.textMuted} strokeWidth={1.5} />
-          <Text
-            style={[
-              styles.archiveLabel,
-              {
-                color: noteContent.trim().length > 0 ? theme.text : theme.textMuted,
-                fontFamily,
-              },
-            ]}
-          >
-            Archive
-          </Text>
+          <SettingsIcon size={19} color={theme.textMuted} strokeWidth={1.4} />
         </TouchableOpacity>
       </View>
     </View>
@@ -153,48 +138,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 18,
-    paddingBottom: 14,
+    paddingHorizontal: 26,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
+  },
+  logoMarkWrapper: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+    opacity: 0.85,
   },
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
-  ghostButton: {
-    width: 34,
-    height: 34,
+  iconButton: {
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-  },
-  pinButton: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  archiveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  archiveLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: -0.2,
   },
 });

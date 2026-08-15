@@ -5,7 +5,7 @@ import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('SettingsScreen', () => {
-  it('renders theme and font choices and responds to close button', async () => {
+  it('renders preferences toggles, backup options, and responds to close button', async () => {
     const onClose = jest.fn();
 
     const { findByText, getByText, getByTestId } = render(
@@ -16,12 +16,10 @@ describe('SettingsScreen', () => {
       </ThemeProvider>
     );
 
-    const title = await findByText('Preferences');
+    const title = await findByText('Zero Note');
     expect(title).toBeTruthy();
-    expect(getByText('OLED Dark')).toBeTruthy();
-    expect(getByText('Warm Paper')).toBeTruthy();
-    expect(getByText('Clean Light')).toBeTruthy();
-    expect(getByText('Monospace')).toBeTruthy();
+    expect(getByText('Haptic Feedback')).toBeTruthy();
+    expect(getByText('Word & Character Counter')).toBeTruthy();
     expect(getByText('Export Backup')).toBeTruthy();
 
     const closeBtn = getByTestId('btn-close-settings');
