@@ -13,6 +13,8 @@ export class NotificationService {
   private channelInitialized = false;
 
   async initNotificationChannel(): Promise<void> {
+    if (Platform.OS === 'web') return;
+
     if (Platform.OS === 'android' && !this.channelInitialized) {
       try {
         await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
@@ -30,13 +32,17 @@ export class NotificationService {
       }
     }
 
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-      }),
-    });
+    try {
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: false,
+          shouldSetBadge: false,
+        }),
+      });
+    } catch {
+      // ignore on platforms without handler support
+    }
   }
 
   formatNotificationPayload(content: string): NotificationPayload {
@@ -81,6 +87,8 @@ export class NotificationService {
   }
 
   async updateLockScreenNotification(content: string, isPinned: boolean): Promise<void> {
+    if (Platform.OS === 'web') return;
+
     await this.initNotificationChannel();
 
     if (!isPinned || content.trim().length === 0) {
@@ -118,6 +126,8 @@ export class NotificationService {
   }
 
   async dismissLockScreenNotification(): Promise<void> {
+    if (Platform.OS === 'web') return;
+
     try {
       await Notifications.dismissNotificationAsync(NOTIFICATION_IDENTIFIER);
     } catch (e) {

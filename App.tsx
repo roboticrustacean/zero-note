@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Modal } from 'react-native';
+import { View, StyleSheet, Modal, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { NotesProvider, useNotes } from './src/context/NotesContext';
@@ -20,33 +20,47 @@ const MainApp: React.FC = () => {
   }, [activeNote.content, activeNote.isPinned]);
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.canvas }]}>
-      <StatusBar style={theme.statusBar} />
-
-      <EditorScreen
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenArchive={() => setIsArchiveOpen(true)}
-      />
-
-      {/* Archive Modal */}
-      <Modal
-        visible={isArchiveOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setIsArchiveOpen(false)}
+    <View style={[styles.outerContainer, { backgroundColor: theme.canvas }]}>
+      <View
+        style={[
+          styles.innerFrame,
+          {
+            backgroundColor: theme.canvas,
+            borderColor: theme.borderSubtle,
+          },
+        ]}
       >
-        <ArchiveScreen onClose={() => setIsArchiveOpen(false)} />
-      </Modal>
+        <StatusBar style={theme.statusBar} />
 
-      {/* Settings Modal */}
-      <Modal
-        visible={isSettingsOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setIsSettingsOpen(false)}
-      >
-        <SettingsScreen onClose={() => setIsSettingsOpen(false)} />
-      </Modal>
+        <EditorScreen
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenArchive={() => setIsArchiveOpen(true)}
+        />
+
+        {/* Archive Modal */}
+        <Modal
+          visible={isArchiveOpen}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setIsArchiveOpen(false)}
+        >
+          <View style={[styles.modalFrame, { backgroundColor: theme.canvas }]}>
+            <ArchiveScreen onClose={() => setIsArchiveOpen(false)} />
+          </View>
+        </Modal>
+
+        {/* Settings Modal */}
+        <Modal
+          visible={isSettingsOpen}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setIsSettingsOpen(false)}
+        >
+          <View style={[styles.modalFrame, { backgroundColor: theme.canvas }]}>
+            <SettingsScreen onClose={() => setIsSettingsOpen(false)} />
+          </View>
+        </Modal>
+      </View>
     </View>
   );
 };
@@ -62,7 +76,26 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  root: {
+  outerContainer: {
     flex: 1,
+    height: '100%',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  innerFrame: {
+    flex: 1,
+    height: '100%',
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 520 : undefined,
+    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+  },
+  modalFrame: {
+    flex: 1,
+    height: '100%',
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 520 : undefined,
+    alignSelf: 'center',
   },
 });
