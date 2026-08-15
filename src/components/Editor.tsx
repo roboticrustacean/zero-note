@@ -11,7 +11,7 @@ import {
   TextInputSelectionChangeEventData,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { toggleChecklistLine } from '../utils/markdownParser';
+import { formatCheckedLinesInText } from '../utils/markdownParser';
 import { safeHaptics } from '../utils/haptics';
 
 interface EditorProps {
@@ -30,20 +30,25 @@ export const Editor: React.FC<EditorProps> = ({
   const lastTapRef = useRef<number>(0);
   const lastSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
 
-  // Handle typing transformations (e.g. typing [] -> - [ ])
+  // Handle typing transformations (auto-brackets and auto-dashed strikethrough)
   const handleChangeText = (text: string) => {
-    // Auto-expand [] or [ ] at beginning of line or after space
-    if (text.endsWith('[] ') || text.endsWith('[ ] ') || text.includes('\n[] ') || text.includes('\n[ ] ')) {
-      const replaced = text
+    // 1. Auto-expand [] or [ ] to - [ ]
+    let updated = text;
+    if (updated.endsWith('[] ') || updated.endsWith('[ ] ') || updated.includes('\n[] ') || updated.includes('\n[ ] ')) {
+      updated = updated
         .replace(/(^|\n)\[\]\s/g, '$1- [ ] ')
         .replace(/(^|\n)\[ \]\s/g, '$1- [ ] ')
         .replace(/(^|\n)\[x\]\s/g, '$1- [x] ');
-      if (replaced !== text) {
-        if (hapticsEnabled) safeHaptics.impact();
-        onChangeContent(replaced);
-        return;
-      }
     }
+
+    // 2. Auto-format dashed strikethrough (~~text~~) when [x] is marked or unmarked
+    const formatted = formatCheckedLinesInText(updated);
+    if (formatted !== text) {
+      if (hapticsEnabled) safeHaptics.impact();
+      onChangeContent(formatted);
+      return;
+    }
+
     onChangeContent(text);
   };
 
@@ -61,12 +66,12 @@ export const Editor: React.FC<EditorProps> = ({
     }
   };
 
-  // Track cursor position for seamless bracket interactions
+  // Track cursor position
   const handleSelectionChange = (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
     lastSelectionRef.current = e.nativeEvent.selection;
   };
 
-  // Double-tap anywhere on canvas creates or toggles a task
+  // Double-tap anywhere on canvas ALWAYS creates a new task line [- [ ] ]
   const handleCanvasDoubleTap = () => {
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
@@ -77,24 +82,15 @@ export const Editor: React.FC<EditorProps> = ({
         safeHaptics.impact();
       }
 
-      // Check if current cursor line is already a task - if so, toggle it
       const cursorPos = lastSelectionRef.current.start;
-      const textBeforeCursor = content.substring(0, cursorPos);
-      const currentLineIndex = textBeforeCursor.split('\n').length - 1;
-      const lines = content.split('\n');
-      const currentLine = lines[currentLineIndex] || '';
+      const before = content.substring(0, cursorPos);
+      const after = content.substring(cursorPos);
 
-      if (currentLine.includes('[ ]') || currentLine.includes('[x]')) {
-        // Toggle the task and move completed task to bottom of block
-        const updated = toggleChecklistLine(content, currentLineIndex, true);
-        onChangeContent(updated);
-        lastTapRef.current = 0;
-        return;
-      }
+      // Insert new task at cursor or at end of line
+      const needsLeadingNewline = before.length > 0 && !before.endsWith('\n');
+      const newTask = `${needsLeadingNewline ? '\n' : ''}- [ ] `;
+      const newContent = `${before}${newTask}${after}`;
 
-      // Otherwise insert a new task line right at cursor or at end
-      const prefix = content.length === 0 || content.endsWith('\n') ? '' : '\n';
-      const newContent = `${content}${prefix}- [ ] `;
       onChangeContent(newContent);
       lastTapRef.current = 0;
 
@@ -118,7 +114,7 @@ export const Editor: React.FC<EditorProps> = ({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Always Unified Single Text Surface (Zero Mode-Switching, Zero Jumps) */}
+          {/* Always 100% Unified Text Surface */}
           <TextInput
             ref={inputRef}
             multiline

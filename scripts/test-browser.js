@@ -19,28 +19,25 @@ async function checkBrowser() {
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
-  // Take screenshot of pure unified single text input canvas
-  await page.screenshot({ path: 'screenshot_unified_editor_idle.png' });
-  console.log('Idle screenshot saved to screenshot_unified_editor_idle.png');
-
-  // Click directly into the text input
   const textInput = page.locator('[data-testid="note-editor-input"]').first();
   if (await textInput.count() > 0) {
-    console.log('Clicking directly into text input...');
-    await textInput.click();
+    // 1. Test double-tap / double-click to create task
+    console.log('Double clicking on canvas...');
+    await textInput.dblclick({ position: { x: 100, y: 320 } });
     await page.waitForTimeout(400);
 
-    // Verify there is ZERO layout jump or mode change
-    await page.screenshot({ path: 'screenshot_unified_editor_focused.png' });
-    console.log('Focused screenshot saved to screenshot_unified_editor_focused.png');
+    // 2. Type task description
+    await textInput.type('Plan next sprint');
+    await page.waitForTimeout(300);
 
-    // Type a new task with []
-    console.log('Typing new task with [] syntax...');
-    await textInput.fill('Ø Zero Note\n\n- [ ] First task\n[] Second task auto expanded');
+    // 3. Mark one task as [x]
+    const content = await textInput.inputValue();
+    const updatedWithX = content.replace('- [ ] Tap checkbox to mark as done', '- [x] Tap checkbox to mark as done');
+    await textInput.fill(updatedWithX);
     await page.waitForTimeout(400);
 
-    await page.screenshot({ path: 'screenshot_unified_editor_typed.png' });
-    console.log('Typed screenshot saved to screenshot_unified_editor_typed.png');
+    await page.screenshot({ path: 'screenshot_unified_dashed_task.png' });
+    console.log('Dashed task screenshot saved to screenshot_unified_dashed_task.png');
   }
 
   await browser.close();

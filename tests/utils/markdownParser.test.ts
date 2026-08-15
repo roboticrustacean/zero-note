@@ -29,10 +29,10 @@ describe('Markdown Parser & Checklist Utils', () => {
     expect(lines[4].text).toBe('Normal note');
   });
 
-  it('toggles checklist line from unchecked to checked and moves completed to bottom', () => {
+  it('toggles checklist line from unchecked to checked and moves completed to bottom with dashed strikethrough', () => {
     const text = '- [ ] Buy coffee\n- [ ] Write code';
     const updated = toggleChecklistLine(text, 0, true);
-    expect(updated).toBe('- [ ] Write code\n- [x] Buy coffee');
+    expect(updated).toBe('- [ ] Write code\n- [x] ~~Buy coffee~~');
 
     const toggledBack = toggleChecklistLine(updated, 1, true);
     expect(toggledBack).toBe('- [ ] Buy coffee\n- [ ] Write code');

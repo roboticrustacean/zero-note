@@ -84,10 +84,24 @@ export function toggleChecklistLine(
 
   const isChecked = match[2].toLowerCase() === 'x';
   const prefix = match[1] || '- ';
-  const content = match[3];
+  let content = match[3].trim();
 
   const newPrefix = prefix.includes('-') || prefix.includes('*') ? prefix : '- ';
   const newStatus = isChecked ? '[ ]' : '[x]';
+
+  // Apply or remove dashed strikethrough (~~text~~)
+  if (!isChecked) {
+    // Becoming checked: add dashes (~~)
+    if (!content.startsWith('~~') && !content.endsWith('~~') && content.length > 0) {
+      content = `~~${content}~~`;
+    }
+  } else {
+    // Becoming unchecked: remove dashes (~~)
+    if (content.startsWith('~~') && content.endsWith('~~')) {
+      content = content.substring(2, content.length - 2);
+    }
+  }
+
   const updatedLine = `${newPrefix.trimEnd()} ${newStatus} ${content}`.trim();
 
   if (!autoMoveToBottom) {
@@ -118,6 +132,37 @@ export function toggleChecklistLine(
   }
 
   return lines.join('\n');
+}
+
+export function formatCheckedLinesInText(text: string): string {
+  const lines = text.split('\n');
+  let hasChanges = false;
+
+  const formattedLines = lines.map((line) => {
+    const match = line.match(CHECKLIST_REGEX);
+    if (!match) return line;
+
+    const isChecked = match[2].toLowerCase() === 'x';
+    const prefix = match[1] || '- ';
+    let content = match[3].trim();
+
+    if (isChecked) {
+      if (!content.startsWith('~~') && !content.endsWith('~~') && content.length > 0) {
+        hasChanges = true;
+        content = `~~${content}~~`;
+        return `${prefix.trimEnd()} [x] ${content}`.trim();
+      }
+    } else {
+      if (content.startsWith('~~') && content.endsWith('~~')) {
+        hasChanges = true;
+        content = content.substring(2, content.length - 2);
+        return `${prefix.trimEnd()} [ ] ${content}`.trim();
+      }
+    }
+    return line;
+  });
+
+  return hasChanges ? formattedLines.join('\n') : text;
 }
 
 export function calculateNoteStats(text: string): NoteStats {
