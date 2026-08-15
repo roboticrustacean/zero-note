@@ -5,11 +5,11 @@ import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('EditorScreen', () => {
-  it('renders editor with Ø branding, history, archive, and interactive checklist', async () => {
+  it('renders unified editor with Ø branding, history, archive, and direct text input', async () => {
     const onOpenSettings = jest.fn();
     const onOpenArchive = jest.fn();
 
-    const { findByText, getByTestId } = render(
+    const { findByTestId, getByTestId } = render(
       <ThemeProvider>
         <NotesProvider>
           <EditorScreen onOpenSettings={onOpenSettings} onOpenArchive={onOpenArchive} />
@@ -17,12 +17,11 @@ describe('EditorScreen', () => {
       </ThemeProvider>
     );
 
-    const taskText = await findByText(/Double tap canvas to create a task/i);
-    expect(taskText).toBeTruthy();
+    const input = await findByTestId('note-editor-input');
+    expect(input).toBeTruthy();
 
-    // Test toggle task checkbox
-    const taskCheckbox = getByTestId('btn-toggle-task-2');
-    fireEvent.press(taskCheckbox);
+    fireEvent.changeText(input, 'Focus on one note');
+    expect(input.props.value).toBe('Focus on one note');
 
     // Test settings via logo button
     const logoBtn = getByTestId('app-logo-mark');

@@ -1,19 +1,17 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef } from 'react';
 import {
-  View,
-  Text,
   TextInput,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  TextInputSelectionChangeEventData,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { parseMarkdownLines, toggleChecklistLine } from '../utils/markdownParser';
+import { toggleChecklistLine } from '../utils/markdownParser';
 import { safeHaptics } from '../utils/haptics';
 
 interface EditorProps {
@@ -30,30 +28,16 @@ export const Editor: React.FC<EditorProps> = ({
   const { theme, fontFamily, typeScale } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const lastTapRef = useRef<number>(0);
-  const [isEditing, setIsEditing] = useState(false);
+  const lastSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
 
-  const parsedLines = useMemo(() => parseMarkdownLines(content), [content]);
-  const hasChecklist = useMemo(
-    () => parsedLines.some((l) => l.type === 'checklist'),
-    [parsedLines]
-  );
-
-  // Toggle task status when the text-based [ ] or [x] magic construct is clicked
-  const handleToggleTask = (lineIndex: number) => {
-    if (hapticsEnabled) {
-      safeHaptics.impact();
-    }
-    // Toggle checkmark and move completed task to bottom of the block
-    const updated = toggleChecklistLine(content, lineIndex, true);
-    onChangeContent(updated);
-  };
-
-  // Smart typing expansion (typing [] or [ ] expands to - [ ])
+  // Handle typing transformations (e.g. typing [] -> - [ ])
   const handleChangeText = (text: string) => {
-    if (text.endsWith('[] ') || text.endsWith('[ ] ')) {
+    // Auto-expand [] or [ ] at beginning of line or after space
+    if (text.endsWith('[] ') || text.endsWith('[ ] ') || text.includes('\n[] ') || text.includes('\n[ ] ')) {
       const replaced = text
         .replace(/(^|\n)\[\]\s/g, '$1- [ ] ')
-        .replace(/(^|\n)\[ \]\s/g, '$1- [ ] ');
+        .replace(/(^|\n)\[ \]\s/g, '$1- [ ] ')
+        .replace(/(^|\n)\[x\]\s/g, '$1- [x] ');
       if (replaced !== text) {
         if (hapticsEnabled) safeHaptics.impact();
         onChangeContent(replaced);
@@ -70,27 +54,50 @@ export const Editor: React.FC<EditorProps> = ({
       const lastLine = lines[lines.length - 1];
 
       if (lastLine === '- [ ] ' || lastLine === '- [x] ') {
-        // Empty task line - remove task prefix to end checklist
+        // Empty task line - clean up brackets to stop checklist
         const trimmed = lines.slice(0, -1).join('\n') + '\n';
         onChangeContent(trimmed);
       }
     }
   };
 
-  // Double-tap anywhere on canvas creates a new task [- [ ] ]
+  // Track cursor position for seamless bracket interactions
+  const handleSelectionChange = (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+    lastSelectionRef.current = e.nativeEvent.selection;
+  };
+
+  // Double-tap anywhere on canvas creates or toggles a task
   const handleCanvasDoubleTap = () => {
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
 
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected!
       if (hapticsEnabled) {
         safeHaptics.impact();
       }
+
+      // Check if current cursor line is already a task - if so, toggle it
+      const cursorPos = lastSelectionRef.current.start;
+      const textBeforeCursor = content.substring(0, cursorPos);
+      const currentLineIndex = textBeforeCursor.split('\n').length - 1;
+      const lines = content.split('\n');
+      const currentLine = lines[currentLineIndex] || '';
+
+      if (currentLine.includes('[ ]') || currentLine.includes('[x]')) {
+        // Toggle the task and move completed task to bottom of block
+        const updated = toggleChecklistLine(content, currentLineIndex, true);
+        onChangeContent(updated);
+        lastTapRef.current = 0;
+        return;
+      }
+
+      // Otherwise insert a new task line right at cursor or at end
       const prefix = content.length === 0 || content.endsWith('\n') ? '' : '\n';
       const newContent = `${content}${prefix}- [ ] `;
       onChangeContent(newContent);
       lastTapRef.current = 0;
-      setIsEditing(true);
+
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
@@ -104,156 +111,40 @@ export const Editor: React.FC<EditorProps> = ({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <ScrollView
-        style={styles.scrollArea}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Magic Text-Based Checklist View (Text based [ ] / [x] construct buttons) */}
-        {!isEditing && hasChecklist ? (
-          <TouchableWithoutFeedback onPress={handleCanvasDoubleTap}>
-            <View style={styles.interactiveCanvas}>
-              {parsedLines.map((line) => {
-                if (line.type === 'checklist') {
-                  const isChecked = line.checked || false;
-                  return (
-                    <View key={`line-${line.index}`} style={styles.taskLine}>
-                      {/* Literal Dash Separator */}
-                      <Text
-                        style={[
-                          styles.dashPrefix,
-                          { color: theme.textMuted, fontFamily, fontSize: typeScale.editor },
-                        ]}
-                      >
-                        -{' '}
-                      </Text>
-
-                      {/* Pure Text-Based Magic Bracket Token [ ] / [x] */}
-                      <TouchableOpacity
-                        onPress={() => handleToggleTask(line.index)}
-                        style={[
-                          styles.magicBracketBadge,
-                          {
-                            backgroundColor: isChecked ? theme.cardActive : theme.card,
-                            borderColor: isChecked ? theme.textMuted : theme.border,
-                          },
-                        ]}
-                        activeOpacity={0.6}
-                        accessibilityLabel={`Toggle task: ${line.text}`}
-                        testID={`btn-toggle-task-${line.index}`}
-                      >
-                        <Text
-                          style={[
-                            styles.magicBracketText,
-                            {
-                              color: isChecked ? theme.textMuted : theme.text,
-                              fontFamily,
-                              fontSize: typeScale.editor * 0.95,
-                              fontWeight: isChecked ? '700' : '500',
-                            },
-                          ]}
-                        >
-                          {isChecked ? '[x]' : '[ ]'}
-                        </Text>
-                      </TouchableOpacity>
-
-                      {/* Task Text next to it with dashed / strikethrough styling */}
-                      <TouchableOpacity
-                        onPress={() => {
-                          setIsEditing(true);
-                          setTimeout(() => inputRef.current?.focus(), 50);
-                        }}
-                        style={styles.taskContentWrapper}
-                        activeOpacity={0.8}
-                      >
-                        <Text
-                          style={[
-                            styles.taskText,
-                            {
-                              color: isChecked ? theme.textMuted : theme.text,
-                              fontFamily,
-                              fontSize: typeScale.editor,
-                              lineHeight: typeScale.editor * 1.7,
-                              textDecorationLine: isChecked ? 'line-through' : 'none',
-                              opacity: isChecked ? 0.45 : 1,
-                            },
-                          ]}
-                        >
-                          {' '}{line.text}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                }
-
-                if (line.type === 'empty') {
-                  return (
-                    <View
-                      key={`line-${line.index}`}
-                      style={{ height: typeScale.editor * 1.2 }}
-                    />
-                  );
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={`line-${line.index}`}
-                    onPress={() => {
-                      setIsEditing(true);
-                      setTimeout(() => inputRef.current?.focus(), 50);
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Text
-                      style={[
-                        styles.plainText,
-                        {
-                          color: theme.text,
-                          fontFamily,
-                          fontSize: typeScale.editor,
-                          lineHeight: typeScale.editor * 1.7,
-                          fontWeight: line.type === 'heading' ? '700' : '400',
-                        },
-                      ]}
-                    >
-                      {line.raw}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </TouchableWithoutFeedback>
-        ) : (
-          <TouchableWithoutFeedback onPress={handleCanvasDoubleTap}>
-            <TextInput
-              ref={inputRef}
-              multiline
-              autoFocus={content.length === 0}
-              value={content}
-              onChangeText={handleChangeText}
-              onKeyPress={handleKeyPress}
-              onFocus={() => setIsEditing(true)}
-              onBlur={() => setIsEditing(false)}
-              placeholder="Start writing..."
-              placeholderTextColor={theme.textMuted}
-              style={[
-                styles.textInput,
-                {
-                  color: theme.text,
-                  fontFamily,
-                  fontSize: typeScale.editor,
-                  lineHeight: typeScale.editor * 1.7,
-                  ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
-                },
-              ]}
-              textAlignVertical="top"
-              scrollEnabled={false}
-              testID="note-editor-input"
-            />
-          </TouchableWithoutFeedback>
-        )}
-      </ScrollView>
+      <TouchableWithoutFeedback onPress={handleCanvasDoubleTap}>
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Always Unified Single Text Surface (Zero Mode-Switching, Zero Jumps) */}
+          <TextInput
+            ref={inputRef}
+            multiline
+            autoFocus={content.length === 0}
+            value={content}
+            onChangeText={handleChangeText}
+            onKeyPress={handleKeyPress}
+            onSelectionChange={handleSelectionChange}
+            placeholder="Start writing..."
+            placeholderTextColor={theme.textMuted}
+            style={[
+              styles.textInput,
+              {
+                color: theme.text,
+                fontFamily,
+                fontSize: typeScale.editor,
+                lineHeight: typeScale.editor * 1.7,
+                ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
+              },
+            ]}
+            textAlignVertical="top"
+            scrollEnabled={false}
+            testID="note-editor-input"
+          />
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
@@ -267,47 +158,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 26,
+    paddingHorizontal: 28,
     paddingTop: 12,
     paddingBottom: 40,
   },
-  interactiveCanvas: {
-    flex: 1,
-    minHeight: 400,
-  },
-  taskLine: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginVertical: 1,
-  },
-  dashPrefix: {
-    letterSpacing: -0.2,
-    opacity: 0.7,
-  },
-  magicBracketBadge: {
-    paddingHorizontal: 3,
-    paddingVertical: 1,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  magicBracketText: {
-    letterSpacing: 0.5,
-  },
-  taskContentWrapper: {
-    flex: 1,
-  },
-  taskText: {
-    letterSpacing: -0.2,
-  },
-  plainText: {
-    letterSpacing: -0.2,
-    marginVertical: 1,
-  },
   textInput: {
     flex: 1,
-    minHeight: 400,
+    minHeight: 450,
     padding: 0,
     margin: 0,
     letterSpacing: -0.2,

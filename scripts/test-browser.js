@@ -19,21 +19,29 @@ async function checkBrowser() {
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
-  // Take screenshot of magic text-construct onboarding
-  await page.screenshot({ path: 'screenshot_magic_text_tasks.png' });
-  console.log('Magic text tasks screenshot saved to screenshot_magic_text_tasks.png');
+  // Take screenshot of pure unified single text input canvas
+  await page.screenshot({ path: 'screenshot_unified_editor_idle.png' });
+  console.log('Idle screenshot saved to screenshot_unified_editor_idle.png');
 
-  // Click the first magic [ ] token
-  const firstBracket = page.locator('[data-testid="btn-toggle-task-2"]').first();
-  if (await firstBracket.count() > 0) {
-    console.log('Tapping [ ] magic construct token...');
-    await firstBracket.click();
-    await page.waitForTimeout(500);
+  // Click directly into the text input
+  const textInput = page.locator('[data-testid="note-editor-input"]').first();
+  if (await textInput.count() > 0) {
+    console.log('Clicking directly into text input...');
+    await textInput.click();
+    await page.waitForTimeout(400);
+
+    // Verify there is ZERO layout jump or mode change
+    await page.screenshot({ path: 'screenshot_unified_editor_focused.png' });
+    console.log('Focused screenshot saved to screenshot_unified_editor_focused.png');
+
+    // Type a new task with []
+    console.log('Typing new task with [] syntax...');
+    await textInput.fill('Ø Zero Note\n\n- [ ] First task\n[] Second task auto expanded');
+    await page.waitForTimeout(400);
+
+    await page.screenshot({ path: 'screenshot_unified_editor_typed.png' });
+    console.log('Typed screenshot saved to screenshot_unified_editor_typed.png');
   }
-
-  // Take screenshot after checking and auto-moving to bottom
-  await page.screenshot({ path: 'screenshot_magic_task_checked_bottom.png' });
-  console.log('Checked and moved to bottom saved to screenshot_magic_task_checked_bottom.png');
 
   await browser.close();
 }
