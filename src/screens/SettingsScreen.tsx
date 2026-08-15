@@ -1,0 +1,295 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+  Switch,
+} from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
+import { useTheme } from '../theme/ThemeContext';
+import { useNotes } from '../context/NotesContext';
+import { ThemeSelector } from '../components/ThemeSelector';
+import { FontSelector } from '../components/FontSelector';
+
+interface SettingsScreenProps {
+  onClose: () => void;
+}
+
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
+  const { theme, fontFamily, typeScale } = useTheme();
+  const { preferences, updatePreferences, exportData, importData, clearCurrentNote } = useNotes();
+  const [importing, setImporting] = useState(false);
+
+  const triggerHaptic = () => {
+    if (preferences.hapticsEnabled) {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const handleExport = async () => {
+    triggerHaptic();
+    const json = await exportData();
+    await Clipboard.setStringAsync(json);
+    Alert.alert('Backup Exported', 'Complete backup JSON has been copied to your clipboard.');
+  };
+
+  const handleImport = async () => {
+    triggerHaptic();
+    const text = await Clipboard.getStringAsync();
+    if (!text || !text.trim().startsWith('{')) {
+      Alert.alert(
+        'Clipboard Empty or Invalid',
+        'Please copy a valid Zero Note backup JSON to your clipboard before tapping Import.'
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Import Backup?',
+      'This will merge or restore notes from your backup. Do you want to proceed?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Import',
+          onPress: async () => {
+            const success = await importData(text);
+            if (success) {
+              Alert.alert('Import Complete', 'Notes and settings restored successfully.');
+            } else {
+              Alert.alert('Import Failed', 'The clipboard content could not be parsed as a valid backup.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleClearCurrent = () => {
+    triggerHaptic();
+    Alert.alert('Clear Active Note', 'Are you sure you want to clear the active note?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          await clearCurrentNote();
+          onClose();
+        },
+      },
+    ]);
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: theme.borderSubtle }]}>
+        <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
+          Preferences
+        </Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-settings">
+          <Text style={[styles.closeText, { color: theme.textSecondary, fontFamily }]}>Done</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Appearance */}
+        <ThemeSelector />
+        <FontSelector />
+
+        {/* Behavior Toggles */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
+            EXPERIENCE
+          </Text>
+
+          <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card }]}>
+            <Text style={[styles.toggleLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
+              Haptic Feedback
+            </Text>
+            <Switch
+              value={preferences.hapticsEnabled}
+              onValueChange={(val) => updatePreferences({ hapticsEnabled: val })}
+              thumbColor={theme.canvas}
+              trackColor={{ false: theme.border, true: theme.accent }}
+            />
+          </View>
+
+          <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card, marginTop: 8 }]}>
+            <Text style={[styles.toggleLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
+              Show Word Counter
+            </Text>
+            <Switch
+              value={preferences.showWordCount}
+              onValueChange={(val) => updatePreferences({ showWordCount: val })}
+              thumbColor={theme.canvas}
+              trackColor={{ false: theme.border, true: theme.accent }}
+            />
+          </View>
+        </View>
+
+        {/* Lock Screen & Widget Guide */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
+            LOCK SCREEN & WIDGETS
+          </Text>
+          <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.infoText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
+              • Tap the 📌 icon in the top bar to pin your note to the Android Lock Screen and notification shade.
+              {'\n'}• Add the Zero Note widget to your Android Home Screen by long-pressing your home screen launcher.
+            </Text>
+          </View>
+        </View>
+
+        {/* Data & Backup */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
+            DATA & BACKUP
+          </Text>
+
+          <View style={styles.dataButtonsRow}>
+            <TouchableOpacity
+              onPress={handleExport}
+              style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              testID="btn-export"
+            >
+              <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+                Export Backup (JSON)
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleImport}
+              style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              testID="btn-import"
+            >
+              <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+                Import from Clipboard
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            onPress={handleClearCurrent}
+            style={[styles.clearBtn, { borderColor: theme.borderSubtle }]}
+            testID="btn-clear-active"
+          >
+            <Text style={[styles.clearBtnText, { color: '#D9534F', fontFamily, fontSize: typeScale.caption }]}>
+              Clear Active Note
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer info */}
+        <View style={styles.footerInfo}>
+          <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
+            Zero Note · Ultra-Minimalist Single Note
+          </Text>
+          <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption, marginTop: 4 }]}>
+            100% Offline & Private
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
+  closeBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  closeText: {
+    fontWeight: '500',
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 50,
+  },
+  section: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    letterSpacing: 1,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  toggleLabel: {
+    letterSpacing: -0.2,
+  },
+  infoCard: {
+    padding: 14,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  infoText: {
+    lineHeight: 18,
+  },
+  dataButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  dataBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dataBtnText: {
+    fontWeight: '500',
+  },
+  clearBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  clearBtnText: {
+    fontWeight: '500',
+  },
+  footerInfo: {
+    marginTop: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerText: {
+    letterSpacing: -0.2,
+    opacity: 0.7,
+  },
+});
