@@ -8,12 +8,13 @@ export interface ParsedLine {
   raw: string;
   text: string;
   checked?: boolean;
+  prefix?: string;
   level?: number; // 1, 2, 3 for headings
 }
 
-const CHECKLIST_REGEX = /^(\s*[-*]?\s*)\[([ xX])\]\s*(.*)$/;
-const HEADING_REGEX = /^(#{1,6})\s+(.*)$/;
-const BULLET_REGEX = /^(\s*[-*•])\s+(.*)$/;
+export const CHECKLIST_REGEX = /^(\s*[-*]?\s*)\[([ xX])\]\s*(.*)$/;
+export const HEADING_REGEX = /^(#{1,6})\s+(.*)$/;
+export const BULLET_REGEX = /^(\s*[-*•])\s+(.*)$/;
 
 export function parseMarkdownLines(text: string): ParsedLine[] {
   if (!text) return [];
@@ -28,10 +29,12 @@ export function parseMarkdownLines(text: string): ParsedLine[] {
     if (checklistMatch) {
       const isChecked = checklistMatch[2].toLowerCase() === 'x';
       const itemText = checklistMatch[3];
+      const prefix = checklistMatch[1] || '- ';
       return {
         index,
         type: 'checklist',
         raw: line,
+        prefix,
         text: itemText,
         checked: isChecked,
       };
@@ -67,7 +70,11 @@ export function parseMarkdownLines(text: string): ParsedLine[] {
   });
 }
 
-export function toggleChecklistLine(fullText: string, lineIndex: number): string {
+export function toggleChecklistLine(
+  fullText: string,
+  lineIndex: number,
+  autoMoveToBottom = true
+): string {
   const lines = fullText.split('\n');
   if (lineIndex < 0 || lineIndex >= lines.length) return fullText;
 
@@ -81,7 +88,34 @@ export function toggleChecklistLine(fullText: string, lineIndex: number): string
 
   const newPrefix = prefix.includes('-') || prefix.includes('*') ? prefix : '- ';
   const newStatus = isChecked ? '[ ]' : '[x]';
-  lines[lineIndex] = `${newPrefix.trimEnd()} ${newStatus} ${content}`.trim();
+  const updatedLine = `${newPrefix.trimEnd()} ${newStatus} ${content}`.trim();
+
+  if (!autoMoveToBottom) {
+    lines[lineIndex] = updatedLine;
+    return lines.join('\n');
+  }
+
+  // Find boundaries of the contiguous checklist block
+  let blockStart = lineIndex;
+  while (blockStart > 0 && lines[blockStart - 1].match(CHECKLIST_REGEX)) {
+    blockStart--;
+  }
+
+  let blockEnd = lineIndex;
+  while (blockEnd < lines.length - 1 && lines[blockEnd + 1].match(CHECKLIST_REGEX)) {
+    blockEnd++;
+  }
+
+  // Remove the line from its current position
+  lines.splice(lineIndex, 1);
+
+  if (!isChecked) {
+    // Becoming checked [x] -> move to bottom of the checklist block
+    lines.splice(blockEnd, 0, updatedLine);
+  } else {
+    // Becoming unchecked [ ] -> move to top of the checklist block
+    lines.splice(blockStart, 0, updatedLine);
+  }
 
   return lines.join('\n');
 }

@@ -29,13 +29,13 @@ describe('Markdown Parser & Checklist Utils', () => {
     expect(lines[4].text).toBe('Normal note');
   });
 
-  it('toggles checklist line from unchecked to checked and vice versa', () => {
-    const text = '- [ ] Buy coffee\n- [x] Write code';
-    const updated = toggleChecklistLine(text, 0);
-    expect(updated).toBe('- [x] Buy coffee\n- [x] Write code');
+  it('toggles checklist line from unchecked to checked and moves completed to bottom', () => {
+    const text = '- [ ] Buy coffee\n- [ ] Write code';
+    const updated = toggleChecklistLine(text, 0, true);
+    expect(updated).toBe('- [ ] Write code\n- [x] Buy coffee');
 
-    const toggledBack = toggleChecklistLine(updated, 1);
-    expect(toggledBack).toBe('- [x] Buy coffee\n- [ ] Write code');
+    const toggledBack = toggleChecklistLine(updated, 1, true);
+    expect(toggledBack).toBe('- [ ] Buy coffee\n- [ ] Write code');
   });
 
   it('calculates note word count and character count accurately', () => {

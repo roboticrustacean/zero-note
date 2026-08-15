@@ -38,16 +38,17 @@ export const Editor: React.FC<EditorProps> = ({
     [parsedLines]
   );
 
-  // Toggle task status when checkbox is tapped
+  // Toggle task status when the text-based [ ] or [x] magic construct is clicked
   const handleToggleTask = (lineIndex: number) => {
     if (hapticsEnabled) {
       safeHaptics.impact();
     }
-    const updated = toggleChecklistLine(content, lineIndex);
+    // Toggle checkmark and move completed task to bottom of the block
+    const updated = toggleChecklistLine(content, lineIndex, true);
     onChangeContent(updated);
   };
 
-  // Smart typing expansion (e.g. typing [] -> - [ ])
+  // Smart typing expansion (typing [] or [ ] expands to - [ ])
   const handleChangeText = (text: string) => {
     if (text.endsWith('[] ') || text.endsWith('[ ] ')) {
       const replaced = text
@@ -69,7 +70,7 @@ export const Editor: React.FC<EditorProps> = ({
       const lastLine = lines[lines.length - 1];
 
       if (lastLine === '- [ ] ' || lastLine === '- [x] ') {
-        // Empty task line - remove task prefix
+        // Empty task line - remove task prefix to end checklist
         const trimmed = lines.slice(0, -1).join('\n') + '\n';
         onChangeContent(trimmed);
       }
@@ -109,54 +110,77 @@ export const Editor: React.FC<EditorProps> = ({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Interactive checklist view when not actively typing */}
+        {/* Magic Text-Based Checklist View (Text based [ ] / [x] construct buttons) */}
         {!isEditing && hasChecklist ? (
           <TouchableWithoutFeedback onPress={handleCanvasDoubleTap}>
             <View style={styles.interactiveCanvas}>
               {parsedLines.map((line) => {
                 if (line.type === 'checklist') {
+                  const isChecked = line.checked || false;
                   return (
-                    <View key={`line-${line.index}`} style={styles.taskRow}>
+                    <View key={`line-${line.index}`} style={styles.taskLine}>
+                      {/* Literal Dash Separator */}
+                      <Text
+                        style={[
+                          styles.dashPrefix,
+                          { color: theme.textMuted, fontFamily, fontSize: typeScale.editor },
+                        ]}
+                      >
+                        -{' '}
+                      </Text>
+
+                      {/* Pure Text-Based Magic Bracket Token [ ] / [x] */}
                       <TouchableOpacity
                         onPress={() => handleToggleTask(line.index)}
                         style={[
-                          styles.checkbox,
+                          styles.magicBracketBadge,
                           {
-                            borderColor: line.checked ? theme.textMuted : theme.text,
-                            backgroundColor: line.checked ? theme.cardActive : 'transparent',
+                            backgroundColor: isChecked ? theme.cardActive : theme.card,
+                            borderColor: isChecked ? theme.textMuted : theme.border,
                           },
                         ]}
                         activeOpacity={0.6}
                         accessibilityLabel={`Toggle task: ${line.text}`}
                         testID={`btn-toggle-task-${line.index}`}
                       >
-                        {line.checked && (
-                          <View style={[styles.checkboxInner, { backgroundColor: theme.text }]} />
-                        )}
+                        <Text
+                          style={[
+                            styles.magicBracketText,
+                            {
+                              color: isChecked ? theme.textMuted : theme.text,
+                              fontFamily,
+                              fontSize: typeScale.editor * 0.95,
+                              fontWeight: isChecked ? '700' : '500',
+                            },
+                          ]}
+                        >
+                          {isChecked ? '[x]' : '[ ]'}
+                        </Text>
                       </TouchableOpacity>
 
+                      {/* Task Text next to it with dashed / strikethrough styling */}
                       <TouchableOpacity
                         onPress={() => {
                           setIsEditing(true);
                           setTimeout(() => inputRef.current?.focus(), 50);
                         }}
-                        style={styles.taskTextWrapper}
+                        style={styles.taskContentWrapper}
                         activeOpacity={0.8}
                       >
                         <Text
                           style={[
                             styles.taskText,
                             {
-                              color: line.checked ? theme.textMuted : theme.text,
+                              color: isChecked ? theme.textMuted : theme.text,
                               fontFamily,
                               fontSize: typeScale.editor,
                               lineHeight: typeScale.editor * 1.7,
-                              textDecorationLine: line.checked ? 'line-through' : 'none',
-                              opacity: line.checked ? 0.55 : 1,
+                              textDecorationLine: isChecked ? 'line-through' : 'none',
+                              opacity: isChecked ? 0.45 : 1,
                             },
                           ]}
                         >
-                          {line.text}
+                          {' '}{line.text}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -164,7 +188,12 @@ export const Editor: React.FC<EditorProps> = ({
                 }
 
                 if (line.type === 'empty') {
-                  return <View key={`line-${line.index}`} style={{ height: typeScale.editor * 1.2 }} />;
+                  return (
+                    <View
+                      key={`line-${line.index}`}
+                      style={{ height: typeScale.editor * 1.2 }}
+                    />
+                  );
                 }
 
                 return (
@@ -246,27 +275,27 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 400,
   },
-  taskRow: {
+  taskLine: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginVertical: 2,
-    gap: 10,
+    alignItems: 'baseline',
+    marginVertical: 1,
   },
-  checkbox: {
-    width: 17,
-    height: 17,
+  dashPrefix: {
+    letterSpacing: -0.2,
+    opacity: 0.7,
+  },
+  magicBracketBadge: {
+    paddingHorizontal: 3,
+    paddingVertical: 1,
     borderRadius: 4,
-    borderWidth: 1.4,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 5,
   },
-  checkboxInner: {
-    width: 9,
-    height: 9,
-    borderRadius: 2,
+  magicBracketText: {
+    letterSpacing: 0.5,
   },
-  taskTextWrapper: {
+  taskContentWrapper: {
     flex: 1,
   },
   taskText: {
