@@ -21,25 +21,35 @@ async function checkBrowser() {
 
   const textInput = page.locator('[data-testid="note-editor-input"]').first();
   if (await textInput.count() > 0) {
-    const val = await textInput.inputValue();
-    const bracketIndex = val.indexOf('[ ]');
-    if (bracketIndex !== -1) {
-      console.log(`Clicking whitespace inside [ ] at index ${bracketIndex + 1}...`);
-      await textInput.focus();
-      await page.evaluate((pos) => {
-        const input = document.querySelector('[data-testid="note-editor-input"]');
-        if (input) {
-          input.setSelectionRange(pos, pos);
-          input.dispatchEvent(new Event('select', { bubbles: true }));
-        }
-      }, bracketIndex + 1);
-      await page.waitForTimeout(400);
+    console.log('Focusing text input and navigating with arrow keys...');
+    await textInput.focus();
+    
+    // Press ArrowDown several times across tasks
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(50);
+    }
 
-      const afterVal = await textInput.inputValue();
-      console.log('Text after toggle:\n', afterVal);
+    // Press ArrowRight several times across brackets
+    for (let i = 0; i < 10; i++) {
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(50);
+    }
 
-      await page.screenshot({ path: 'screenshot_clean_no_tildes.png' });
-      console.log('Clean screenshot saved to screenshot_clean_no_tildes.png');
+    // Press ArrowLeft
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(50);
+    }
+
+    const valAfterArrows = await textInput.inputValue();
+    console.log('Text after arrow navigation (should NOT have changed tasks):\n', valAfterArrows);
+
+    // Verify tasks are intact
+    if (valAfterArrows.includes('- [ ] Double tap canvas to create a task')) {
+      console.log('PASSED: Arrow key navigation is 100% normal text navigation!');
+    } else {
+      console.error('FAILED: Arrow navigation altered text.');
     }
   }
 

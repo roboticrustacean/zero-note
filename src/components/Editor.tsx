@@ -29,66 +29,11 @@ export const Editor: React.FC<EditorProps> = ({
   const inputRef = useRef<TextInput>(null);
   const lastTapRef = useRef<number>(0);
   const lastSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
-  const isTogglingRef = useRef<boolean>(false);
-
-  // Detect if cursor position is on or inside a task bracket [ ] or [x]
-  const checkAndToggleBracketAtPos = (pos: number): boolean => {
-    if (isTogglingRef.current) return false;
-
-    const lines = content.split('\n');
-    let charCount = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const lineStart = charCount;
-      const lineEnd = lineStart + line.length;
-
-      if (pos >= lineStart && pos <= lineEnd + 1) {
-        // Line found
-        const match = line.match(/^(\s*[-*]?\s*)\[([ xX])\]\s*(.*)$/);
-        if (match) {
-          const prefixLen = match[1].length;
-          const bracketStart = lineStart + prefixLen; // index of '['
-          const bracketEnd = bracketStart + 3; // index after ']' (e.g. '[ ]' or '[x]')
-
-          // If the click/cursor is directly inside or on the [ ] / [x] block
-          if (pos >= bracketStart && pos <= bracketEnd) {
-            isTogglingRef.current = true;
-            if (hapticsEnabled) safeHaptics.impact();
-
-            const isChecked = match[2].toLowerCase() === 'x';
-            const prefix = match[1] || '- ';
-            let itemText = match[3].trim();
-
-            // Strip any accidental tildes
-            if (itemText.startsWith('~~') && itemText.endsWith('~~')) {
-              itemText = itemText.substring(2, itemText.length - 2);
-            }
-
-            const nextMark = isChecked ? '[ ]' : '[x]';
-            const newLine = `${prefix.trimEnd()} ${nextMark} ${itemText}`.trim();
-
-            lines[i] = newLine;
-            const updatedContent = lines.join('\n');
-            onChangeContent(updatedContent);
-
-            setTimeout(() => {
-              isTogglingRef.current = false;
-            }, 250);
-
-            return true;
-          }
-        }
-      }
-      charCount = lineEnd + 1;
-    }
-    return false;
-  };
 
   // Handle typing transformations (auto-brackets)
   const handleChangeText = (text: string) => {
     let updated = text;
-    // 1. Auto-expand [] or [ ] to - [ ]
+    // Auto-expand [] or [ ] to - [ ]
     if (
       updated.endsWith('[] ') ||
       updated.endsWith('[ ] ') ||
@@ -101,7 +46,7 @@ export const Editor: React.FC<EditorProps> = ({
         .replace(/(^|\n)\[x\]\s/g, '$1- [x] ');
     }
 
-    // 2. Clean any legacy tildes
+    // Clean any legacy tildes
     const cleaned = formatCheckedLinesInText(updated);
     if (cleaned !== text) {
       onChangeContent(cleaned);
@@ -125,14 +70,52 @@ export const Editor: React.FC<EditorProps> = ({
     }
   };
 
-  // Track cursor position and detect clicks on [ ] whitespace
+  // Track cursor position ONLY (Never toggle on arrow keys!)
   const handleSelectionChange = (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-    const sel = e.nativeEvent.selection;
-    lastSelectionRef.current = sel;
+    lastSelectionRef.current = e.nativeEvent.selection;
+  };
 
-    // Check if cursor clicked directly into [ ] or [x]
-    if (sel.start === sel.end) {
-      checkAndToggleBracketAtPos(sel.start);
+  // Intentional mouse click / pointer release handler (Only toggles if user explicitly clicked inside [ ] or [x])
+  const handleClick = (e: any) => {
+    if (Platform.OS === 'web') {
+      const target = e.target as HTMLTextAreaElement | HTMLInputElement;
+      if (target && typeof target.selectionStart === 'number') {
+        const pos = target.selectionStart;
+        const lines = content.split('\n');
+        let charCount = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const lineStart = charCount;
+          const lineEnd = lineStart + line.length;
+
+          if (pos >= lineStart && pos <= lineEnd + 1) {
+            const match = line.match(/^(\s*[-*]?\s*)\[([ xX])\]\s*(.*)$/);
+            if (match) {
+              const prefixLen = match[1].length;
+              const bracketStart = lineStart + prefixLen; // index of '['
+              const bracketEnd = bracketStart + 3; // index after ']'
+
+              // Only if user clicked directly inside [ ] or [x]
+              if (pos >= bracketStart && pos <= bracketEnd) {
+                if (hapticsEnabled) safeHaptics.impact();
+
+                const isChecked = match[2].toLowerCase() === 'x';
+                const prefix = match[1] || '- ';
+                const itemText = match[3].trim();
+
+                const nextMark = isChecked ? '[ ]' : '[x]';
+                lines[i] = `${prefix.trimEnd()} ${nextMark} ${itemText}`.trim();
+
+                const updatedContent = lines.join('\n');
+                onChangeContent(updatedContent);
+                return;
+              }
+            }
+          }
+          charCount = lineEnd + 1;
+        }
+      }
     }
   };
 
@@ -142,7 +125,6 @@ export const Editor: React.FC<EditorProps> = ({
     const DOUBLE_TAP_DELAY = 300;
 
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-      // Double tap detected!
       if (hapticsEnabled) {
         safeHaptics.impact();
       }
@@ -197,9 +179,15 @@ export const Editor: React.FC<EditorProps> = ({
                 fontFamily,
                 fontSize: typeScale.editor,
                 lineHeight: typeScale.editor * 1.7,
-                ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
+                ...(Platform.OS === 'web'
+                  ? ({
+                      outlineStyle: 'none',
+                      outlineWidth: 0,
+                    } as any)
+                  : {}),
               },
             ]}
+            {...(Platform.OS === 'web' ? ({ onClick: handleClick } as any) : {})}
             textAlignVertical="top"
             scrollEnabled={false}
             testID="note-editor-input"
