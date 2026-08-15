@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { ZeroLogo, HistoryIcon, PinIcon, ArchiveIcon } from './Icons';
+import { ZeroLogo, HistoryIcon, ArchiveIcon } from './Icons';
 import { safeHaptics } from '../utils/haptics';
 
 interface HeaderBarProps {
-  isPinned: boolean;
-  onTogglePin: () => void;
   onArchive: () => void;
   onOpenSettings: () => void;
   onOpenArchive: () => void;
@@ -15,8 +13,6 @@ interface HeaderBarProps {
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
-  isPinned,
-  onTogglePin,
   onArchive,
   onOpenSettings,
   onOpenArchive,
@@ -42,36 +38,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           onOpenSettings();
         }}
         style={styles.logoButton}
-        accessibilityLabel="Zero Note Settings and Info"
+        accessibilityLabel="Zero Note Settings"
         testID="app-logo-mark"
         activeOpacity={0.6}
       >
         <ZeroLogo size={20} color={theme.text} strokeWidth={2} />
       </TouchableOpacity>
 
-      {/* Right: Only the 3 essential action glyphs: Pin, History, Archive */}
+      {/* Right: History & Archive */}
       <View style={styles.rightGroup}>
-        <TouchableOpacity
-          onPress={() => {
-            triggerHaptic();
-            onTogglePin();
-          }}
-          style={[
-            styles.iconButton,
-            isPinned && { backgroundColor: theme.cardActive },
-          ]}
-          accessibilityLabel="Pin note to lock screen"
-          testID="btn-pin"
-          activeOpacity={0.6}
-        >
-          <PinIcon
-            size={18}
-            color={isPinned ? theme.accent : theme.textMuted}
-            strokeWidth={1.4}
-            filled={isPinned}
-          />
-        </TouchableOpacity>
-
         <TouchableOpacity
           onPress={() => {
             triggerHaptic();
@@ -112,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 16,
     paddingBottom: 8,
   },
   logoButton: {

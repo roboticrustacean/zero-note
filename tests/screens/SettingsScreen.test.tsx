@@ -19,7 +19,7 @@ describe('SettingsScreen', () => {
     const title = await findByText('Zero Note');
     expect(title).toBeTruthy();
     expect(getByText('Haptic Feedback')).toBeTruthy();
-    expect(getByText('Word & Character Counter')).toBeTruthy();
+    expect(getByText('Word Counter')).toBeTruthy();
     expect(getByText('Reload Guide Note')).toBeTruthy();
     expect(getByText('Export Backup')).toBeTruthy();
 

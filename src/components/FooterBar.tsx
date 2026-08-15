@@ -5,11 +5,10 @@ import { NoteStats } from '../types/note';
 
 interface FooterBarProps {
   stats: NoteStats;
-  isSaving: boolean;
   visible?: boolean;
 }
 
-export const FooterBar: React.FC<FooterBarProps> = ({ stats, isSaving, visible = true }) => {
+export const FooterBar: React.FC<FooterBarProps> = ({ stats, visible = true }) => {
   const { theme, fontFamily, typeScale } = useTheme();
 
   if (!visible) return null;
@@ -22,10 +21,6 @@ export const FooterBar: React.FC<FooterBarProps> = ({ stats, isSaving, visible =
       <Text style={[styles.statsText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
         {stats.words} {wordLabel}  ·  {stats.chars} {charLabel}
       </Text>
-
-      <Text style={[styles.statusText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-        {isSaving ? 'saving…' : 'saved'}
-      </Text>
     </View>
   );
 };
@@ -34,15 +29,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: 28,
-    paddingVertical: 14,
-    opacity: 0.6,
+    paddingVertical: 12,
+    opacity: 0.5,
   },
   statsText: {
-    letterSpacing: 0.2,
-  },
-  statusText: {
     letterSpacing: 0.2,
   },
 });

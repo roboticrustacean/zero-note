@@ -40,46 +40,39 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
     triggerHaptic();
     const json = await exportData();
     await Clipboard.setStringAsync(json);
-    Alert.alert('Backup Exported', 'Complete backup JSON has been copied to your clipboard.');
+    Alert.alert('Exported', 'Backup copied to clipboard.');
   };
 
   const handleImport = async () => {
     triggerHaptic();
     const text = await Clipboard.getStringAsync();
     if (!text || !text.trim().startsWith('{')) {
-      Alert.alert(
-        'Clipboard Empty or Invalid',
-        'Please copy a valid Zero Note backup JSON to your clipboard before tapping Import.'
-      );
+      Alert.alert('Invalid', 'No valid backup JSON found in clipboard.');
       return;
     }
 
-    Alert.alert(
-      'Import Backup?',
-      'This will merge or restore notes from your backup. Do you want to proceed?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Import',
-          onPress: async () => {
-            const success = await importData(text);
-            if (success) {
-              Alert.alert('Import Complete', 'Note and settings restored successfully.');
-            } else {
-              Alert.alert('Import Failed', 'The clipboard content could not be parsed as a valid backup.');
-            }
-          },
+    Alert.alert('Import Backup', 'Restore notes from backup?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Import',
+        onPress: async () => {
+          const success = await importData(text);
+          if (success) {
+            Alert.alert('Restored', 'Backup restored successfully.');
+          } else {
+            Alert.alert('Error', 'Could not parse backup.');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleReloadGuide = () => {
     triggerHaptic();
-    Alert.alert('Reload Guide Note', 'Restore the initial guide note into your active canvas?', [
+    Alert.alert('Reload Guide', 'Restore the initial guide note?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Reload Guide',
+        text: 'Reload',
         onPress: async () => {
           await reloadOnboardingNote();
           onClose();
@@ -90,7 +83,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   const handleClearCurrent = () => {
     triggerHaptic();
-    Alert.alert('Clear Active Note', 'Are you sure you want to clear the active note? It will be safely archived.', [
+    Alert.alert('Clear Canvas', 'Archive current note and start fresh?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Clear',
@@ -105,28 +98,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
-      {/* Header with Ø branding */}
+      {/* Clean Minimal Header */}
       <View style={[styles.header, { borderBottomColor: theme.borderSubtle }]}>
         <View style={styles.headerLeft}>
-          <ZeroLogo size={20} color={theme.text} strokeWidth={2} />
-          <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
+          <ZeroLogo size={18} color={theme.text} strokeWidth={2} />
+          <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
             Zero Note
           </Text>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-settings" activeOpacity={0.6}>
-          <CloseIcon size={18} color={theme.textMuted} strokeWidth={1.5} />
+          <CloseIcon size={16} color={theme.textMuted} strokeWidth={1.5} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Behavior Toggles */}
+        {/* Toggles */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            PREFERENCES
-          </Text>
-
-          <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card }]}>
-            <Text style={[styles.toggleLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
+          <View style={[styles.row, { borderColor: theme.borderSubtle, backgroundColor: theme.card }]}>
+            <Text style={[styles.rowLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
               Haptic Feedback
             </Text>
             <Switch
@@ -137,9 +126,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
             />
           </View>
 
-          <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card, marginTop: 8 }]}>
-            <Text style={[styles.toggleLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
-              Word & Character Counter
+          <View style={[styles.row, { borderColor: theme.borderSubtle, backgroundColor: theme.card, marginTop: 8 }]}>
+            <Text style={[styles.rowLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
+              Word Counter
             </Text>
             <Switch
               value={preferences.showWordCount}
@@ -150,43 +139,27 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
           </View>
         </View>
 
-        {/* Lock Screen & Widget Guide */}
+        {/* Actions */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            LOCK SCREEN PINNING
-          </Text>
-          <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Text style={[styles.infoText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-              Tap the pin icon in the top header to keep your single active note pinned on your Android Lock Screen.
-            </Text>
-          </View>
-        </View>
-
-        {/* Data & Backup */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            DATA & GUIDE
-          </Text>
-
-          <View style={styles.dataButtonsRow}>
+          <View style={styles.buttonRow}>
             <TouchableOpacity
               onPress={handleExport}
-              style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[styles.btn, { backgroundColor: theme.card, borderColor: theme.border }]}
               testID="btn-export"
               activeOpacity={0.7}
             >
-              <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+              <Text style={[styles.btnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
                 Export Backup
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleImport}
-              style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[styles.btn, { backgroundColor: theme.card, borderColor: theme.border }]}
               testID="btn-import"
               activeOpacity={0.7}
             >
-              <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+              <Text style={[styles.btnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
                 Import Backup
               </Text>
             </TouchableOpacity>
@@ -194,34 +167,31 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
           <TouchableOpacity
             onPress={handleReloadGuide}
-            style={[styles.guideBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+            style={[styles.fullBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
             testID="btn-reload-guide"
             activeOpacity={0.7}
           >
-            <Text style={[styles.guideBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+            <Text style={[styles.btnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
               Reload Guide Note
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleClearCurrent}
-            style={[styles.clearBtn, { borderColor: theme.borderSubtle }]}
+            style={[styles.fullBtn, { borderColor: theme.borderSubtle }]}
             testID="btn-clear-active"
             activeOpacity={0.7}
           >
-            <Text style={[styles.clearBtnText, { color: '#E06C75', fontFamily, fontSize: typeScale.caption }]}>
+            <Text style={[styles.btnText, { color: '#E06C75', fontFamily, fontSize: typeScale.caption }]}>
               Clear Active Note
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Footer info */}
-        <View style={styles.footerInfo}>
+        {/* Whisper Footer */}
+        <View style={styles.footer}>
           <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
             Ø · Pure Digital Minimalism
-          </Text>
-          <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption, marginTop: 4 }]}>
-            100% Offline & Encrypted Locally
           </Text>
         </View>
       </ScrollView>
@@ -237,8 +207,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   headerLeft: {
@@ -248,94 +218,65 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontWeight: '600',
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
-    padding: 24,
-    paddingBottom: 60,
+    padding: 20,
+    paddingBottom: 40,
   },
   section: {
-    marginTop: 22,
+    marginTop: 14,
   },
-  sectionTitle: {
-    letterSpacing: 1.2,
-    fontWeight: '600',
-    marginBottom: 10,
-  },
-  toggleRow: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
   },
-  toggleLabel: {
+  rowLabel: {
     letterSpacing: -0.2,
   },
-  infoCard: {
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  infoText: {
-    lineHeight: 20,
-    letterSpacing: -0.2,
-  },
-  dataButtonsRow: {
+  buttonRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
-  dataBtn: {
+  btn: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dataBtnText: {
-    fontWeight: '500',
-    letterSpacing: -0.2,
-  },
-  guideBtn: {
-    paddingVertical: 12,
+  fullBtn: {
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  guideBtnText: {
+  btnText: {
     fontWeight: '500',
     letterSpacing: -0.2,
   },
-  clearBtn: {
-    paddingVertical: 12,
+  footer: {
+    marginTop: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  clearBtnText: {
-    fontWeight: '500',
-    letterSpacing: -0.2,
-  },
-  footerInfo: {
-    marginTop: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    opacity: 0.4,
   },
   footerText: {
-    letterSpacing: 0.2,
-    opacity: 0.5,
+    letterSpacing: 0.3,
   },
 });

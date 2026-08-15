@@ -12,7 +12,6 @@ describe('Zero Note Root App Integration', () => {
     await waitFor(() => {
       expect(getByTestId('app-logo-mark')).toBeTruthy();
       expect(getByTestId('btn-history')).toBeTruthy();
-      expect(getByTestId('btn-pin')).toBeTruthy();
       expect(getByTestId('btn-archive')).toBeTruthy();
     });
   });

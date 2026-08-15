@@ -61,7 +61,7 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({ children }) => {
 
   return (
     <View style={[styles.desktopBackdrop, { backgroundColor: '#ECE9E2' }]}>
-      {/* Floating Resizable Window Frame */}
+      {/* Pure Minimal Floating Resizable Window Slate */}
       <View
         style={[
           styles.windowFrame,
@@ -73,15 +73,6 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({ children }) => {
           },
         ]}
       >
-        {/* Minimal macOS Titlebar (Just subtle traffic lights, zero redundant text) */}
-        <View style={styles.windowTitleBar}>
-          <View style={styles.windowControls}>
-            <View style={[styles.controlDot, { backgroundColor: '#FF5F56' }]} />
-            <View style={[styles.controlDot, { backgroundColor: '#FFBD2E' }]} />
-            <View style={[styles.controlDot, { backgroundColor: '#27C93F' }]} />
-          </View>
-        </View>
-
         {/* Window Content */}
         <View style={styles.windowContent}>{children}</View>
 
@@ -114,32 +105,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   windowFrame: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.18,
-    shadowRadius: 36,
-    elevation: 24,
+    shadowOpacity: 0.12,
+    shadowRadius: 32,
+    elevation: 20,
     position: 'relative',
-  },
-  windowTitleBar: {
-    height: 28,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-  },
-  windowControls: {
-    flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-  },
-  controlDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    opacity: 0.85,
   },
   windowContent: {
     flex: 1,

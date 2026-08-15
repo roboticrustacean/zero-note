@@ -20,9 +20,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
     activeNote,
     stats,
     isLoading,
-    isSaving,
     updateActiveNoteContent,
-    togglePinActiveNote,
     archiveCurrentNote,
     preferences,
   } = useNotes();
@@ -40,8 +38,6 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
       <HeaderBar
-        isPinned={activeNote.isPinned}
-        onTogglePin={togglePinActiveNote}
         onArchive={archiveCurrentNote}
         onOpenSettings={onOpenSettings}
         onOpenArchive={onOpenArchive}
@@ -59,7 +55,6 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
 
       <FooterBar
         stats={stats}
-        isSaving={isSaving}
         visible={preferences.showWordCount}
       />
     </SafeAreaView>
