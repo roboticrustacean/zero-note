@@ -15,37 +15,22 @@ async function checkBrowser() {
 
   console.log('Navigating to http://localhost:8081...');
   await page.goto('http://localhost:8081', { waitUntil: 'networkidle', timeout: 15000 });
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
-  // Type note content into the floating window
-  const editor = page.locator('textarea, input[data-testid="note-editor-input"]').first();
-  if (await editor.count() > 0) {
-    await editor.click();
-    await editor.fill(
-      `Ø Floating Window Mode\n\n- [x] Mononote instant Archive flow\n- [x] Resizable desktop window\n- [ ] Focus on one active thought`
-    );
-  }
+  // Take screenshot of pre-installed onboarding checklist note
+  await page.screenshot({ path: 'screenshot_zero_onboarding.png' });
+  console.log('Onboarding screenshot saved to screenshot_zero_onboarding.png');
 
-  await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'screenshot_floating_window.png' });
-  console.log('Floating window screenshot saved to screenshot_floating_window.png');
-
-  // Test Archive button click
-  const archiveBtn = page.locator('[data-testid="btn-archive"]').first();
-  if (await archiveBtn.count() > 0) {
-    console.log('Clicking Archive button...');
-    await archiveBtn.click();
-    await page.waitForTimeout(800);
-  }
-
-  // Open Archive drawer to verify archived note
-  const historyBtn = page.locator('[data-testid="btn-history"]').first();
-  if (await historyBtn.count() > 0) {
-    console.log('Clicking History button...');
-    await historyBtn.click();
+  // Open Settings via clicking the Ø logo
+  const logoBtn = page.locator('[data-testid="app-logo-mark"]').first();
+  if (await logoBtn.count() > 0) {
+    console.log('Tapping Ø logo to open Settings...');
+    await logoBtn.click();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'screenshot_floating_archive.png' });
-    console.log('Archive drawer screenshot saved to screenshot_floating_archive.png');
+    await page.screenshot({ path: 'screenshot_zero_settings_v2.png' });
+    console.log('Settings screenshot saved to screenshot_zero_settings_v2.png');
   }
 
   await browser.close();

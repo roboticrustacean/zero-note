@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   Platform,
   Dimensions,
   PanResponder,
-  Text,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { ResizeHandleIcon } from './Icons';
@@ -74,15 +73,13 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({ children }) => {
           },
         ]}
       >
-        {/* Subtle Traffic Light / Window Bar */}
-        <View style={[styles.windowTitleBar, { borderBottomColor: theme.borderSubtle }]}>
+        {/* Minimal macOS Titlebar (Just subtle traffic lights, zero redundant text) */}
+        <View style={styles.windowTitleBar}>
           <View style={styles.windowControls}>
             <View style={[styles.controlDot, { backgroundColor: '#FF5F56' }]} />
             <View style={[styles.controlDot, { backgroundColor: '#FFBD2E' }]} />
             <View style={[styles.controlDot, { backgroundColor: '#27C93F' }]} />
           </View>
-          <Text style={[styles.windowTitle, { color: theme.textMuted }]}>Ø Zero Note</Text>
-          <View style={{ width: 44 }} />
         </View>
 
         {/* Window Content */}
@@ -128,29 +125,21 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   windowTitleBar: {
-    height: 36,
+    height: 28,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 14,
-    borderBottomWidth: 1,
-    opacity: 0.8,
   },
   windowControls: {
     flexDirection: 'row',
-    gap: 7,
+    gap: 6,
     alignItems: 'center',
   },
   controlDot: {
-    width: 11,
-    height: 11,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     opacity: 0.85,
-  },
-  windowTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: -0.2,
   },
   windowContent: {
     flex: 1,
@@ -159,8 +148,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'nwse-resize' as any,

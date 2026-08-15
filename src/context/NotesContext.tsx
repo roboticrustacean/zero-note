@@ -17,6 +17,7 @@ interface NotesContextValue {
   restoreNote: (noteId: string) => Promise<boolean>;
   deleteNote: (noteId: string) => Promise<void>;
   clearCurrentNote: () => Promise<void>;
+  reloadOnboardingNote: () => Promise<void>;
   updatePreferences: (prefs: Partial<UserPreferences>) => Promise<void>;
   refreshArchivedNotes: () => Promise<void>;
   exportData: () => Promise<string>;
@@ -130,8 +131,15 @@ export const NotesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const clearCurrentNote = useCallback(async () => {
-    const cleared = await storageService.clearActiveNote();
+    const cleared = await storageService.clearActiveNote(true);
+    const refreshedArchived = await storageService.getArchivedNotes();
     setActiveNote(cleared);
+    setArchivedNotes(refreshedArchived);
+  }, []);
+
+  const reloadOnboardingNote = useCallback(async () => {
+    const note = await storageService.reloadOnboardingNote();
+    setActiveNote(note);
   }, []);
 
   const updatePreferences = useCallback(async (prefs: Partial<UserPreferences>) => {
@@ -179,6 +187,7 @@ export const NotesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         restoreNote,
         deleteNote,
         clearCurrentNote,
+        reloadOnboardingNote,
         updatePreferences,
         refreshArchivedNotes,
         exportData,

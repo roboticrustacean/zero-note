@@ -1,4 +1,4 @@
-import { storageService } from '../../src/services/storage';
+import { storageService, ONBOARDING_NOTE_CONTENT } from '../../src/services/storage';
 
 describe('StorageService', () => {
   beforeEach(async () => {
@@ -60,7 +60,7 @@ describe('StorageService', () => {
 
     await storageService.clearAll();
     const activeAfterClear = await storageService.getActiveNote();
-    expect(activeAfterClear.content).toBe('');
+    expect(activeAfterClear.content).toBe(ONBOARDING_NOTE_CONTENT);
 
     const imported = await storageService.importBackup(backupJson);
     expect(imported).toBe(true);

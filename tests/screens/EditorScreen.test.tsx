@@ -5,7 +5,7 @@ import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('EditorScreen', () => {
-  it('renders editor with Ø branding, history, archive, and settings', async () => {
+  it('renders editor with Ø branding, history, archive, and settings via logo', async () => {
     const onOpenSettings = jest.fn();
     const onOpenArchive = jest.fn();
 
@@ -23,9 +23,9 @@ describe('EditorScreen', () => {
     fireEvent.changeText(input, 'Testing single note');
     expect(input.props.value).toBe('Testing single note');
 
-    // Test settings button
-    const settingsBtn = getByTestId('btn-settings');
-    fireEvent.press(settingsBtn);
+    // Test settings via logo button
+    const logoBtn = getByTestId('app-logo-mark');
+    fireEvent.press(logoBtn);
     expect(onOpenSettings).toHaveBeenCalled();
 
     // Test archive history button

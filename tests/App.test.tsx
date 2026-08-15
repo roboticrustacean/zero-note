@@ -14,7 +14,6 @@ describe('Zero Note Root App Integration', () => {
       expect(getByTestId('btn-history')).toBeTruthy();
       expect(getByTestId('btn-pin')).toBeTruthy();
       expect(getByTestId('btn-archive')).toBeTruthy();
-      expect(getByTestId('btn-settings')).toBeTruthy();
     });
   });
 });

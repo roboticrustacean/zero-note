@@ -5,7 +5,7 @@ import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('SettingsScreen', () => {
-  it('renders preferences toggles, backup options, and responds to close button', async () => {
+  it('renders preferences toggles, reload guide, backup options, and responds to close button', async () => {
     const onClose = jest.fn();
 
     const { findByText, getByText, getByTestId } = render(
@@ -20,6 +20,7 @@ describe('SettingsScreen', () => {
     expect(title).toBeTruthy();
     expect(getByText('Haptic Feedback')).toBeTruthy();
     expect(getByText('Word & Character Counter')).toBeTruthy();
+    expect(getByText('Reload Guide Note')).toBeTruthy();
     expect(getByText('Export Backup')).toBeTruthy();
 
     const closeBtn = getByTestId('btn-close-settings');

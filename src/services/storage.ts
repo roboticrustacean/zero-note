@@ -8,6 +8,17 @@ const STORAGE_KEYS = {
   PREFERENCES: '@zeronote:preferences',
 };
 
+export const ONBOARDING_NOTE_CONTENT = `# Ø Zero Note
+
+One active thought at a time.
+
+- [ ] Write down what matters right now
+- [ ] Tap 📌 to pin this note to your Lock Screen
+- [ ] Tap 🗄️ Archive to wipe canvas for your next note
+- [ ] Tap 🕒 to search or restore previous notes
+
+Everything saves locally & instantly.`;
+
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -24,7 +35,7 @@ export class StorageService {
     }
     const defaultNote: Note = {
       id: generateId(),
-      content: '',
+      content: ONBOARDING_NOTE_CONTENT,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       isPinned: false,
@@ -71,7 +82,7 @@ export class StorageService {
       await AsyncStorage.setItem(STORAGE_KEYS.ARCHIVED_NOTES, JSON.stringify(updatedList));
     }
 
-    // Reset active note to a new blank note
+    // Reset active note to a clean blank note
     const newActive: Note = {
       id: generateId(),
       content: '',
@@ -119,8 +130,19 @@ export class StorageService {
     return true;
   }
 
-  async clearActiveNote(): Promise<Note> {
+  async clearActiveNote(autoArchive = true): Promise<Note> {
     const active = await this.getActiveNote();
+
+    if (autoArchive && active.content.trim().length > 0) {
+      const archivedNote: Note = {
+        ...active,
+        archivedAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      const archivedNotes = await this.getArchivedNotes();
+      await AsyncStorage.setItem(STORAGE_KEYS.ARCHIVED_NOTES, JSON.stringify([archivedNote, ...archivedNotes]));
+    }
+
     const cleared: Note = {
       id: generateId(),
       content: '',
@@ -130,6 +152,18 @@ export class StorageService {
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(cleared));
     return cleared;
+  }
+
+  async reloadOnboardingNote(): Promise<Note> {
+    const note: Note = {
+      id: generateId(),
+      content: ONBOARDING_NOTE_CONTENT,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      isPinned: false,
+    };
+    await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(note));
+    return note;
   }
 
   async getPreferences(): Promise<UserPreferences> {

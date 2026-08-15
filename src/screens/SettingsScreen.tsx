@@ -21,7 +21,14 @@ interface SettingsScreenProps {
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
   const { theme, fontFamily, typeScale } = useTheme();
-  const { preferences, updatePreferences, exportData, importData, clearCurrentNote } = useNotes();
+  const {
+    preferences,
+    updatePreferences,
+    exportData,
+    importData,
+    clearCurrentNote,
+    reloadOnboardingNote,
+  } = useNotes();
 
   const triggerHaptic = () => {
     if (preferences.hapticsEnabled) {
@@ -67,9 +74,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
     );
   };
 
+  const handleReloadGuide = () => {
+    triggerHaptic();
+    Alert.alert('Reload Guide Note', 'Restore the initial checklist guide note into your active canvas?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reload Guide',
+        onPress: async () => {
+          await reloadOnboardingNote();
+          onClose();
+        },
+      },
+    ]);
+  };
+
   const handleClearCurrent = () => {
     triggerHaptic();
-    Alert.alert('Clear Active Note', 'Are you sure you want to clear the active note?', [
+    Alert.alert('Clear Active Note', 'Are you sure you want to clear the active note? It will be safely archived.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Clear',
@@ -144,7 +165,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Data & Backup */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            DATA & BACKUP
+            DATA & GUIDE
           </Text>
 
           <View style={styles.dataButtonsRow}>
@@ -170,6 +191,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity
+            onPress={handleReloadGuide}
+            style={[styles.guideBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+            testID="btn-reload-guide"
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.guideBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
+              Reload Guide Note
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleClearCurrent}
@@ -260,7 +292,7 @@ const styles = StyleSheet.create({
   dataButtonsRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   dataBtn: {
     flex: 1,
@@ -271,6 +303,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dataBtnText: {
+    fontWeight: '500',
+    letterSpacing: -0.2,
+  },
+  guideBtn: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  guideBtnText: {
     fontWeight: '500',
     letterSpacing: -0.2,
   },
