@@ -60,20 +60,13 @@ export const Editor: React.FC<EditorProps> = ({
             const prefix = match[1] || '- ';
             let itemText = match[3].trim();
 
-            let newLine = '';
-            if (!isChecked) {
-              // Mark as [x] with dashed strikethrough in place
-              if (!itemText.startsWith('~~') && !itemText.endsWith('~~') && itemText.length > 0) {
-                itemText = `~~${itemText}~~`;
-              }
-              newLine = `${prefix.trimEnd()} [x] ${itemText}`.trim();
-            } else {
-              // Unmark to [ ] and remove dashed strikethrough in place
-              if (itemText.startsWith('~~') && itemText.endsWith('~~')) {
-                itemText = itemText.substring(2, itemText.length - 2);
-              }
-              newLine = `${prefix.trimEnd()} [ ] ${itemText}`.trim();
+            // Strip any accidental tildes
+            if (itemText.startsWith('~~') && itemText.endsWith('~~')) {
+              itemText = itemText.substring(2, itemText.length - 2);
             }
+
+            const nextMark = isChecked ? '[ ]' : '[x]';
+            const newLine = `${prefix.trimEnd()} ${nextMark} ${itemText}`.trim();
 
             lines[i] = newLine;
             const updatedContent = lines.join('\n');
@@ -92,7 +85,7 @@ export const Editor: React.FC<EditorProps> = ({
     return false;
   };
 
-  // Handle typing transformations (auto-brackets and auto-dashed strikethrough)
+  // Handle typing transformations (auto-brackets)
   const handleChangeText = (text: string) => {
     let updated = text;
     // 1. Auto-expand [] or [ ] to - [ ]
@@ -108,11 +101,10 @@ export const Editor: React.FC<EditorProps> = ({
         .replace(/(^|\n)\[x\]\s/g, '$1- [x] ');
     }
 
-    // 2. Auto-format dashed strikethrough when [x] is typed or changed
-    const formatted = formatCheckedLinesInText(updated);
-    if (formatted !== text) {
-      if (hapticsEnabled) safeHaptics.impact();
-      onChangeContent(formatted);
+    // 2. Clean any legacy tildes
+    const cleaned = formatCheckedLinesInText(updated);
+    if (cleaned !== text) {
+      onChangeContent(cleaned);
       return;
     }
 

@@ -21,31 +21,11 @@ async function checkBrowser() {
 
   const textInput = page.locator('[data-testid="note-editor-input"]').first();
   if (await textInput.count() > 0) {
-    // 1. Initial hovered screenshot
-    await page.mouse.move(640, 400);
-    await page.waitForTimeout(400);
-    await page.screenshot({ path: 'screenshot_hovered_ui.png' });
-    console.log('Hovered UI screenshot saved to screenshot_hovered_ui.png');
-
-    // 2. Move mouse away to test ambient fade out
-    console.log('Moving mouse outside the window...');
-    await page.mouse.move(50, 50);
-    await page.waitForTimeout(600);
-    await page.screenshot({ path: 'screenshot_faded_ui.png' });
-    console.log('Faded UI screenshot saved to screenshot_faded_ui.png');
-
-    // 3. Move mouse back in and test clicking whitespace inside [ ]
-    console.log('Moving mouse back and clicking inside [ ] whitespace...');
-    await page.mouse.move(640, 400);
-    await page.waitForTimeout(300);
-
-    // Get current text and find position of '[ ]' on the first task
     const val = await textInput.inputValue();
     const bracketIndex = val.indexOf('[ ]');
     if (bracketIndex !== -1) {
-      console.log(`Setting cursor right inside [ ] at index ${bracketIndex + 1}...`);
+      console.log(`Clicking whitespace inside [ ] at index ${bracketIndex + 1}...`);
       await textInput.focus();
-      // Set selection right between [ and ]
       await page.evaluate((pos) => {
         const input = document.querySelector('[data-testid="note-editor-input"]');
         if (input) {
@@ -55,8 +35,11 @@ async function checkBrowser() {
       }, bracketIndex + 1);
       await page.waitForTimeout(400);
 
-      await page.screenshot({ path: 'screenshot_bracket_toggled_in_place.png' });
-      console.log('Toggled in place screenshot saved to screenshot_bracket_toggled_in_place.png');
+      const afterVal = await textInput.inputValue();
+      console.log('Text after toggle:\n', afterVal);
+
+      await page.screenshot({ path: 'screenshot_clean_no_tildes.png' });
+      console.log('Clean screenshot saved to screenshot_clean_no_tildes.png');
     }
   }
 

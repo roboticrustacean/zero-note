@@ -14,6 +14,9 @@ export const oledDark: ThemeColors = {
   accentText: '#000000',
   strikeThrough: '#444444',
   statusBar: 'light',
+  glassBg: 'rgba(12, 12, 12, 0.76)',
+  glassBorder: 'rgba(255, 255, 255, 0.12)',
+  glassHighlight: 'rgba(255, 255, 255, 0.16)',
 };
 
 export const warmPaper: ThemeColors = {
@@ -30,6 +33,9 @@ export const warmPaper: ThemeColors = {
   accentText: '#FFFFFF',
   strikeThrough: '#A09F9C',
   statusBar: 'dark',
+  glassBg: 'rgba(247, 246, 243, 0.76)',
+  glassBorder: 'rgba(0, 0, 0, 0.08)',
+  glassHighlight: 'rgba(255, 255, 255, 0.75)',
 };
 
 export const cleanLight: ThemeColors = {
@@ -46,6 +52,9 @@ export const cleanLight: ThemeColors = {
   accentText: '#FFFFFF',
   strikeThrough: '#999999',
   statusBar: 'dark',
+  glassBg: 'rgba(255, 255, 255, 0.82)',
+  glassBorder: 'rgba(0, 0, 0, 0.06)',
+  glassHighlight: 'rgba(255, 255, 255, 0.90)',
 };
 
 export const themes: Record<ThemeMode, ThemeColors> = {

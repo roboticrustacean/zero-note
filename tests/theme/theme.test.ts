@@ -42,4 +42,17 @@ describe('Theme System', () => {
     expect(getFontFamily('sans')).toBeDefined();
     expect(getFontFamily('serif')).toBeDefined();
   });
+
+  it('should define liquid glass tokens for all themes', () => {
+    const modes: Array<'oled-dark' | 'warm-paper' | 'clean-light'> = ['oled-dark', 'warm-paper', 'clean-light'];
+    modes.forEach((mode) => {
+      const t = getTheme(mode);
+      expect(t.glassBg).toBeDefined();
+      expect(t.glassBorder).toBeDefined();
+      expect(t.glassHighlight).toBeDefined();
+      expect(typeof t.glassBg).toBe('string');
+      expect(typeof t.glassBorder).toBe('string');
+      expect(typeof t.glassHighlight).toBe('string');
+    });
+  });
 });

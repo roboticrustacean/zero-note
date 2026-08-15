@@ -66,6 +66,18 @@ export const FluidModal: React.FC<FluidModalProps> = ({
   });
 
   const isDesktopWeb = Platform.OS === 'web' && Dimensions.get('window').width > 600;
+  const isWeb = Platform.OS === 'web';
+
+  const webGlassStyle = isWeb
+    ? ({
+        backdropFilter: 'blur(36px) saturate(190%) contrast(102%)',
+        WebkitBackdropFilter: 'blur(36px) saturate(190%) contrast(102%)',
+        boxShadow:
+          theme.name === 'oled-dark'
+            ? '0 32px 72px -16px rgba(0, 0, 0, 0.85), 0 12px 28px -6px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.16)'
+            : '0 32px 72px -16px rgba(0, 0, 0, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.08), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03)',
+      } as any)
+    : {};
 
   return (
     <View style={styles.overlayContainer} pointerEvents="box-none">
@@ -78,6 +90,7 @@ export const FluidModal: React.FC<FluidModalProps> = ({
               opacity: backdropOpacity,
               backgroundColor: '#000000',
             },
+            isWeb ? ({ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' } as any) : {},
           ]}
         />
       </TouchableWithoutFeedback>
@@ -97,14 +110,25 @@ export const FluidModal: React.FC<FluidModalProps> = ({
           style={[
             styles.panelContent,
             {
-              backgroundColor: theme.canvas,
-              borderColor: theme.border,
+              backgroundColor: theme.glassBg,
+              borderColor: theme.glassBorder,
             },
+            webGlassStyle,
           ]}
         >
+          {/* Top Specular Rim Reflection Highlight */}
+          <View
+            style={[
+              styles.specularRim,
+              {
+                backgroundColor: theme.glassHighlight,
+              },
+            ]}
+          />
+
           {/* Subtle drag / pull indicator */}
           <View style={styles.handleContainer}>
-            <View style={[styles.handleBar, { backgroundColor: theme.border }]} />
+            <View style={[styles.handleBar, { backgroundColor: theme.textMuted, opacity: 0.3 }]} />
           </View>
 
           <SafeAreaView style={styles.innerContent}>{children}</SafeAreaView>
@@ -142,15 +166,25 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
   },
   panelContent: {
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 28,
     elevation: 16,
     height: '100%',
+    position: 'relative',
+  },
+  specularRim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    opacity: 0.75,
+    zIndex: 10,
   },
   handleContainer: {
     width: '100%',
@@ -162,7 +196,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    opacity: 0.8,
   },
   innerContent: {
     flex: 1,

@@ -16,6 +16,10 @@ export interface ThemeColors {
   accentText: string;
   strikeThrough: string;
   statusBar: 'light' | 'dark';
+  // Liquid Glass Tokens
+  glassBg: string;
+  glassBorder: string;
+  glassHighlight: string;
 }
 
 export interface FontDefinition {

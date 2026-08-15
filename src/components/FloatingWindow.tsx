@@ -59,20 +59,56 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({ children }) => {
     return <View style={[styles.mobileContainer, { backgroundColor: theme.canvas }]}>{children}</View>;
   }
 
+  // Atmospheric desktop background based on theme mode
+  const backdropGradient =
+    theme.name === 'oled-dark'
+      ? 'radial-gradient(ellipse at 50% 30%, #1c1d22 0%, #0d0e10 70%, #070708 100%)'
+      : theme.name === 'warm-paper'
+      ? 'radial-gradient(ellipse at 50% 25%, #FAF7F0 0%, #ECE6DA 65%, #DDD6C7 100%)'
+      : 'radial-gradient(ellipse at 50% 25%, #FFFFFF 0%, #EFF1F5 65%, #DFE2E8 100%)';
+
+  const webGlassStyle = isWeb
+    ? ({
+        backdropFilter: 'blur(32px) saturate(180%) contrast(102%)',
+        WebkitBackdropFilter: 'blur(32px) saturate(180%) contrast(102%)',
+        boxShadow:
+          theme.name === 'oled-dark'
+            ? '0 28px 64px -12px rgba(0, 0, 0, 0.75), 0 8px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.16)'
+            : '0 28px 64px -12px rgba(0, 0, 0, 0.15), 0 8px 24px -4px rgba(0, 0, 0, 0.07), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03)',
+        backgroundImage: backdropGradient,
+      } as any)
+    : {};
+
   return (
-    <View style={[styles.desktopBackdrop, { backgroundColor: '#ECE9E2' }]}>
-      {/* Pure Minimal Floating Resizable Window Slate */}
+    <View
+      style={[
+        styles.desktopBackdrop,
+        isWeb ? ({ backgroundImage: backdropGradient } as any) : { backgroundColor: theme.canvas },
+      ]}
+    >
+      {/* Liquid Glass Paper Floating Window */}
       <View
         style={[
           styles.windowFrame,
           {
             width: windowSize.width,
             height: windowSize.height,
-            backgroundColor: theme.canvas,
-            borderColor: theme.border,
+            backgroundColor: theme.glassBg,
+            borderColor: theme.glassBorder,
           },
+          webGlassStyle,
         ]}
       >
+        {/* Top Specular Rim Reflection Highlight */}
+        <View
+          style={[
+            styles.specularRim,
+            {
+              backgroundColor: theme.glassHighlight,
+            },
+          ]}
+        />
+
         {/* Window Content */}
         <View style={styles.windowContent}>{children}</View>
 
@@ -105,15 +141,24 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   windowFrame: {
-    borderRadius: 14,
+    borderRadius: 22,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.12,
-    shadowRadius: 32,
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.15,
+    shadowRadius: 36,
     elevation: 20,
     position: 'relative',
+  },
+  specularRim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    opacity: 0.8,
+    zIndex: 10,
   },
   windowContent: {
     flex: 1,
@@ -122,8 +167,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'nwse-resize' as any,
