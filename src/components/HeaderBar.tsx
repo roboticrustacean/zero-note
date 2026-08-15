@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
+import { SettingsIcon, HistoryIcon, PinIcon, ShareIcon, ArchiveIcon } from './Icons';
 
 interface HeaderBarProps {
   isPinned: boolean;
@@ -47,19 +48,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   };
 
   return (
-    <View style={[styles.container, { borderBottomColor: theme.borderSubtle }]}>
-      {/* Left side: Settings & Archive History */}
+    <View style={styles.container}>
+      {/* Left side: Subtle ghost icons for Settings & History */}
       <View style={styles.leftGroup}>
         <TouchableOpacity
           onPress={() => {
             triggerHaptic();
             onOpenSettings();
           }}
-          style={styles.iconButton}
+          style={styles.ghostButton}
           accessibilityLabel="Settings"
           testID="btn-settings"
+          activeOpacity={0.6}
         >
-          <Text style={[styles.iconText, { color: theme.textSecondary, fontFamily }]}>⚙</Text>
+          <SettingsIcon size={19} color={theme.textMuted} strokeWidth={1.4} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -67,11 +69,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             triggerHaptic();
             onOpenArchive();
           }}
-          style={styles.iconButton}
+          style={styles.ghostButton}
           accessibilityLabel="Archive History"
           testID="btn-history"
+          activeOpacity={0.6}
         >
-          <Text style={[styles.iconText, { color: theme.textSecondary, fontFamily }]}>◫</Text>
+          <HistoryIcon size={19} color={theme.textMuted} strokeWidth={1.4} />
         </TouchableOpacity>
       </View>
 
@@ -83,11 +86,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               triggerHaptic();
               handleShare();
             }}
-            style={styles.iconButton}
+            style={styles.ghostButton}
             accessibilityLabel="Share note"
             testID="btn-share"
+            activeOpacity={0.6}
           >
-            <Text style={[styles.iconText, { color: theme.textSecondary, fontFamily }]}>↗</Text>
+            <ShareIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
           </TouchableOpacity>
         )}
 
@@ -102,18 +106,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           ]}
           accessibilityLabel="Pin note to lock screen"
           testID="btn-pin"
+          activeOpacity={0.6}
         >
-          <Text
-            style={[
-              styles.pinIcon,
-              {
-                color: isPinned ? theme.accent : theme.textMuted,
-                fontFamily,
-              },
-            ]}
-          >
-            {isPinned ? '📌' : '📍'}
-          </Text>
+          <PinIcon
+            size={18}
+            color={isPinned ? theme.accent : theme.textMuted}
+            strokeWidth={1.4}
+            filled={isPinned}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -127,11 +127,29 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             }
             onArchive();
           }}
-          style={[styles.archiveButton, { borderColor: theme.border }]}
+          style={[
+            styles.archiveBadge,
+            {
+              backgroundColor: noteContent.trim().length > 0 ? theme.card : 'transparent',
+              borderColor: noteContent.trim().length > 0 ? theme.border : 'transparent',
+            },
+          ]}
           accessibilityLabel="Archive current note"
           testID="btn-archive"
+          activeOpacity={0.7}
         >
-          <Text style={[styles.archiveText, { color: theme.text, fontFamily }]}>Archive</Text>
+          <ArchiveIcon size={15} color={noteContent.trim().length > 0 ? theme.text : theme.textMuted} strokeWidth={1.5} />
+          <Text
+            style={[
+              styles.archiveLabel,
+              {
+                color: noteContent.trim().length > 0 ? theme.text : theme.textMuted,
+                fontFamily,
+              },
+            ]}
+          >
+            Archive
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -143,48 +161,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 14,
   },
   leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  iconButton: {
-    width: 36,
-    height: 36,
+  ghostButton: {
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6,
-  },
-  iconText: {
-    fontSize: 18,
+    borderRadius: 8,
   },
   pinButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 6,
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  pinIcon: {
-    fontSize: 15,
-  },
-  archiveButton: {
+  archiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingVertical: 7,
+    borderRadius: 8,
     borderWidth: 1,
   },
-  archiveText: {
-    fontSize: 13,
+  archiveLabel: {
+    fontSize: 12,
     fontWeight: '500',
     letterSpacing: -0.2,
   },

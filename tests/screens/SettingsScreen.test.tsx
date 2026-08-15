@@ -22,7 +22,7 @@ describe('SettingsScreen', () => {
     expect(getByText('Warm Paper')).toBeTruthy();
     expect(getByText('Clean Light')).toBeTruthy();
     expect(getByText('Monospace')).toBeTruthy();
-    expect(getByText('Export Backup (JSON)')).toBeTruthy();
+    expect(getByText('Export Backup')).toBeTruthy();
 
     const closeBtn = getByTestId('btn-close-settings');
     fireEvent.press(closeBtn);

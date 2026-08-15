@@ -8,10 +8,12 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useNotes } from '../context/NotesContext';
 import { ArchiveCard } from '../components/ArchiveCard';
+import { CloseIcon } from '../components/Icons';
 
 interface ArchiveScreenProps {
   onClose: () => void;
@@ -64,22 +66,22 @@ export const ArchiveScreen: React.FC<ArchiveScreenProps> = ({ onClose }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.canvas }]}>
-      {/* Header */}
+      {/* Minimal Header */}
       <View style={[styles.header, { borderBottomColor: theme.borderSubtle }]}>
         <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
-          Archive History
+          Archive
         </Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-archive">
-          <Text style={[styles.closeText, { color: theme.textSecondary, fontFamily }]}>Done</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-archive" activeOpacity={0.6}>
+          <CloseIcon size={18} color={theme.textMuted} strokeWidth={1.5} />
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
+      {/* Subtle Search Bar */}
       <View style={[styles.searchContainer, { borderBottomColor: theme.borderSubtle }]}>
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search archived notes..."
+          placeholder="Search archive..."
           placeholderTextColor={theme.textMuted}
           style={[
             styles.searchInput,
@@ -89,6 +91,7 @@ export const ArchiveScreen: React.FC<ArchiveScreenProps> = ({ onClose }) => {
               borderColor: theme.border,
               fontFamily,
               fontSize: typeScale.body,
+              ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
             },
           ]}
           autoCapitalize="none"
@@ -98,7 +101,7 @@ export const ArchiveScreen: React.FC<ArchiveScreenProps> = ({ onClose }) => {
       </View>
 
       {/* Notes List */}
-      <ScrollView contentContainerStyle={styles.listContent}>
+      <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
         {filteredNotes.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily, fontSize: typeScale.body }]}>
@@ -129,42 +132,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     borderBottomWidth: 1,
   },
   headerTitle: {
     fontWeight: '600',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   closeBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  closeText: {
-    fontWeight: '500',
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   searchInput: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 6,
+    borderRadius: 8,
     borderWidth: 1,
   },
   listContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 24,
+    paddingBottom: 50,
   },
   emptyContainer: {
-    paddingVertical: 60,
+    paddingVertical: 70,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     letterSpacing: -0.2,
+    opacity: 0.6,
   },
 });

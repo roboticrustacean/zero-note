@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
 import { Note } from '../types/note';
 import { calculateNoteStats, formatTimeAgo } from '../utils/markdownParser';
+import { RestoreIcon, CopyIcon, TrashIcon } from './Icons';
 
 interface ArchiveCardProps {
   note: Note;
@@ -65,7 +66,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({
     >
       <View style={styles.cardHeader}>
         <Text style={[styles.timeText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-          {formatTimeAgo(note.archivedAt || note.updatedAt)} · {stats.words} words
+          {formatTimeAgo(note.archivedAt || note.updatedAt)}  ·  {stats.words} words
         </Text>
       </View>
 
@@ -88,7 +89,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({
           style={[
             styles.previewText,
             {
-              color: theme.textSecondary,
+              color: theme.textMuted,
               fontFamily,
               fontSize: typeScale.caption,
             },
@@ -102,21 +103,35 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({
       <View style={[styles.cardFooter, { borderTopColor: theme.borderSubtle }]}>
         <TouchableOpacity
           onPress={handleRestore}
-          style={[styles.actionBtn, styles.restoreBtn, { borderColor: theme.border }]}
+          style={[styles.restoreBtn, { borderColor: theme.border, backgroundColor: theme.cardActive }]}
           testID={`btn-restore-${note.id}`}
+          activeOpacity={0.7}
         >
+          <RestoreIcon size={14} color={theme.text} strokeWidth={1.5} />
           <Text style={[styles.restoreBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
             Restore
           </Text>
         </TouchableOpacity>
 
         <View style={styles.rightActions}>
-          <TouchableOpacity onPress={handleCopy} style={styles.iconBtn} testID={`btn-copy-${note.id}`}>
-            <Text style={[styles.iconText, { color: theme.textSecondary, fontFamily }]}>Copy</Text>
+          <TouchableOpacity
+            onPress={handleCopy}
+            style={styles.iconBtn}
+            testID={`btn-copy-${note.id}`}
+            accessibilityLabel="Copy note"
+            activeOpacity={0.6}
+          >
+            <CopyIcon size={16} color={theme.textMuted} strokeWidth={1.4} />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleDelete} style={styles.iconBtn} testID={`btn-delete-${note.id}`}>
-            <Text style={[styles.iconText, { color: '#D9534F', fontFamily }]}>Delete</Text>
+          <TouchableOpacity
+            onPress={handleDelete}
+            style={styles.iconBtn}
+            testID={`btn-delete-${note.id}`}
+            accessibilityLabel="Delete note"
+            activeOpacity={0.6}
+          >
+            <TrashIcon size={16} color="#E06C75" strokeWidth={1.4} />
           </TouchableOpacity>
         </View>
       </View>
@@ -126,16 +141,16 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     padding: 16,
     marginBottom: 12,
   },
   cardHeader: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   timeText: {
-    letterSpacing: -0.2,
+    letterSpacing: 0.2,
   },
   titleText: {
     fontWeight: '600',
@@ -154,27 +169,26 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     marginTop: 4,
   },
-  actionBtn: {
+  restoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 4,
+    borderRadius: 6,
     borderWidth: 1,
   },
-  restoreBtn: {},
   restoreBtnText: {
     fontWeight: '500',
+    letterSpacing: -0.2,
   },
   rightActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   iconBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-  },
-  iconText: {
-    fontSize: 12,
-    letterSpacing: -0.2,
+    padding: 6,
+    borderRadius: 6,
   },
 });

@@ -16,9 +16,9 @@ describe('ArchiveScreen', () => {
       </ThemeProvider>
     );
 
-    const input = await findByPlaceholderText('Search archived notes...');
+    const input = await findByPlaceholderText('Search archive...');
     expect(input).toBeTruthy();
-    expect(getByText('Archive History')).toBeTruthy();
+    expect(getByText('Archive')).toBeTruthy();
 
     const closeBtn = getByTestId('btn-close-archive');
     fireEvent.press(closeBtn);

@@ -17,7 +17,7 @@ describe('EditorScreen', () => {
       </ThemeProvider>
     );
 
-    const input = await findByPlaceholderText('Write your note...');
+    const input = await findByPlaceholderText('Start writing...');
     expect(input).toBeTruthy();
 
     fireEvent.changeText(input, 'Testing single note');

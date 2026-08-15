@@ -56,20 +56,11 @@ export const Editor: React.FC<EditorProps> = ({
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* If user is not actively editing and there are checklist items, show interactive checkboxes at top */}
+        {/* Interactive checklist block when viewing */}
         {!isFocused && hasChecklistItems && (
-          <View style={[styles.checklistOverlay, { borderBottomColor: theme.borderSubtle }]}>
-            <View style={styles.checklistHeader}>
-              <Text style={[styles.sectionLabel, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-                INTERACTIVE TASKS
-              </Text>
-              <TouchableOpacity onPress={() => inputRef.current?.focus()} style={styles.editButton}>
-                <Text style={[styles.editButtonText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-                  Edit Raw
-                </Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.checklistSection}>
             {parsedLines
               .filter((l) => l.type === 'checklist')
               .map((line) => (
@@ -93,7 +84,7 @@ export const Editor: React.FC<EditorProps> = ({
           onChangeText={onChangeContent}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="Write your note..."
+          placeholder="Start writing..."
           placeholderTextColor={theme.textMuted}
           style={[
             styles.textInput,
@@ -101,7 +92,7 @@ export const Editor: React.FC<EditorProps> = ({
               color: theme.text,
               fontFamily,
               fontSize: typeScale.editor,
-              lineHeight: typeScale.editor * 1.6,
+              lineHeight: typeScale.editor * 1.7,
               ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
             },
           ]}
@@ -110,15 +101,16 @@ export const Editor: React.FC<EditorProps> = ({
           testID="note-editor-input"
         />
 
-        {/* Quick Insert Checklist button at bottom when typing */}
-        {content.length > 0 && isFocused && (
+        {/* Floating subtle + Task shortcut */}
+        {isFocused && (
           <TouchableOpacity
             onPress={handleInsertChecklist}
             style={[styles.quickTaskBtn, { borderColor: theme.borderSubtle }]}
             testID="btn-insert-task"
+            activeOpacity={0.6}
           >
-            <Text style={[styles.quickTaskText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-              + Add task item
+            <Text style={[styles.quickTaskText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
+              + task
             </Text>
           </TouchableOpacity>
         )}
@@ -136,47 +128,29 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 28,
+    paddingTop: 12,
+    paddingBottom: 60,
   },
-  checklistOverlay: {
-    paddingBottom: 12,
-    marginBottom: 16,
-    borderBottomWidth: 1,
-  },
-  checklistHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  sectionLabel: {
-    letterSpacing: 1,
-    fontWeight: '600',
-  },
-  editButton: {
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-  },
-  editButtonText: {
-    textDecorationLine: 'underline',
+  checklistSection: {
+    marginBottom: 20,
   },
   textInput: {
     flex: 1,
-    minHeight: 300,
+    minHeight: 400,
     padding: 0,
     margin: 0,
+    letterSpacing: -0.2,
   },
   quickTaskBtn: {
-    marginTop: 20,
-    paddingVertical: 8,
+    marginTop: 24,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     alignSelf: 'flex-start',
-    borderWidth: 1,
     borderRadius: 6,
+    borderWidth: 1,
   },
   quickTaskText: {
-    letterSpacing: -0.2,
+    letterSpacing: 0.5,
   },
 });

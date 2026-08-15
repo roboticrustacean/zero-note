@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useNotes } from '../context/NotesContext';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { FontSelector } from '../components/FontSelector';
+import { CloseIcon } from '../components/Icons';
 
 interface SettingsScreenProps {
   onClose: () => void;
@@ -23,7 +24,6 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
   const { theme, fontFamily, typeScale } = useTheme();
   const { preferences, updatePreferences, exportData, importData, clearCurrentNote } = useNotes();
-  const [importing, setImporting] = useState(false);
 
   const triggerHaptic = () => {
     if (preferences.hapticsEnabled) {
@@ -95,12 +95,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         <Text style={[styles.headerTitle, { color: theme.text, fontFamily, fontSize: typeScale.headerTitle }]}>
           Preferences
         </Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-settings">
-          <Text style={[styles.closeText, { color: theme.textSecondary, fontFamily }]}>Done</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn} testID="btn-close-settings" activeOpacity={0.6}>
+          <CloseIcon size={18} color={theme.textMuted} strokeWidth={1.5} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Appearance */}
         <ThemeSelector />
         <FontSelector />
@@ -108,7 +108,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Behavior Toggles */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            EXPERIENCE
+            PREFERENCES
           </Text>
 
           <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card }]}>
@@ -125,7 +125,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
           <View style={[styles.toggleRow, { borderColor: theme.border, backgroundColor: theme.card, marginTop: 8 }]}>
             <Text style={[styles.toggleLabel, { color: theme.text, fontFamily, fontSize: typeScale.body }]}>
-              Show Word Counter
+              Word & Character Counter
             </Text>
             <Switch
               value={preferences.showWordCount}
@@ -139,12 +139,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Lock Screen & Widget Guide */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            LOCK SCREEN & WIDGETS
+            LOCK SCREEN NOTIFICATION
           </Text>
           <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.infoText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-              • Tap the 📌 icon in the top bar to pin your note to the Android Lock Screen and notification shade.
-              {'\n'}• Add the Zero Note widget to your Android Home Screen by long-pressing your home screen launcher.
+              Tap the 📌 icon in the top header to keep your current note pinned directly on the Android Lock Screen.
             </Text>
           </View>
         </View>
@@ -160,9 +159,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
               onPress={handleExport}
               style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
               testID="btn-export"
+              activeOpacity={0.7}
             >
               <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
-                Export Backup (JSON)
+                Export Backup
               </Text>
             </TouchableOpacity>
 
@@ -170,6 +170,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
               onPress={handleImport}
               style={[styles.dataBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
               testID="btn-import"
+              activeOpacity={0.7}
             >
               <Text style={[styles.dataBtnText, { color: theme.text, fontFamily, fontSize: typeScale.caption }]}>
                 Import from Clipboard
@@ -181,8 +182,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
             onPress={handleClearCurrent}
             style={[styles.clearBtn, { borderColor: theme.borderSubtle }]}
             testID="btn-clear-active"
+            activeOpacity={0.7}
           >
-            <Text style={[styles.clearBtnText, { color: '#D9534F', fontFamily, fontSize: typeScale.caption }]}>
+            <Text style={[styles.clearBtnText, { color: '#E06C75', fontFamily, fontSize: typeScale.caption }]}>
               Clear Active Note
             </Text>
           </TouchableOpacity>
@@ -191,10 +193,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
         {/* Footer info */}
         <View style={styles.footerInfo}>
           <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-            Zero Note · Ultra-Minimalist Single Note
+            Zero Note · Pure Digital Minimalism
           </Text>
           <Text style={[styles.footerText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption, marginTop: 4 }]}>
-            100% Offline & Private
+            100% Offline & Encrypted Locally
           </Text>
         </View>
       </ScrollView>
@@ -210,32 +212,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     borderBottomWidth: 1,
   },
   headerTitle: {
     fontWeight: '600',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   closeBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  closeText: {
-    fontWeight: '500',
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
-    padding: 20,
-    paddingBottom: 50,
+    padding: 24,
+    paddingBottom: 60,
   },
   section: {
-    marginTop: 20,
+    marginTop: 22,
   },
   sectionTitle: {
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   toggleRow: {
     flexDirection: 'row',
@@ -243,19 +244,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 6,
+    borderRadius: 8,
     borderWidth: 1,
   },
   toggleLabel: {
     letterSpacing: -0.2,
   },
   infoCard: {
-    padding: 14,
-    borderRadius: 6,
+    padding: 16,
+    borderRadius: 8,
     borderWidth: 1,
   },
   infoText: {
-    lineHeight: 18,
+    lineHeight: 20,
+    letterSpacing: -0.2,
   },
   dataButtonsRow: {
     flexDirection: 'row',
@@ -265,23 +267,25 @@ const styles = StyleSheet.create({
   dataBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 6,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dataBtnText: {
     fontWeight: '500',
+    letterSpacing: -0.2,
   },
   clearBtn: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6,
+    borderRadius: 8,
     borderWidth: 1,
   },
   clearBtnText: {
     fontWeight: '500',
+    letterSpacing: -0.2,
   },
   footerInfo: {
     marginTop: 40,
@@ -289,7 +293,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
-    letterSpacing: -0.2,
-    opacity: 0.7,
+    letterSpacing: 0.2,
+    opacity: 0.5,
   },
 });

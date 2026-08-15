@@ -42,6 +42,28 @@ jest.mock('react-native', () => {
   };
 });
 
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const createMockSvgComponent = (name) => {
+    const Component = (props) => React.createElement(name, props, props.children);
+    Component.displayName = name;
+    return Component;
+  };
+  return {
+    __esModule: true,
+    default: createMockSvgComponent('Svg'),
+    Svg: createMockSvgComponent('Svg'),
+    Path: createMockSvgComponent('Path'),
+    Circle: createMockSvgComponent('Circle'),
+    Rect: createMockSvgComponent('Rect'),
+    G: createMockSvgComponent('G'),
+    Line: createMockSvgComponent('Line'),
+    Polygon: createMockSvgComponent('Polygon'),
+    Polyline: createMockSvgComponent('Polyline'),
+  };
+});
+
 // In-memory mock for AsyncStorage
 const mockStorage = new Map();
 

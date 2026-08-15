@@ -6,7 +6,7 @@ describe('Zero Note Root App Integration', () => {
   it('renders root application successfully', async () => {
     const { findByPlaceholderText, getByTestId } = render(<App />);
 
-    const input = await findByPlaceholderText('Write your note...');
+    const input = await findByPlaceholderText('Start writing...');
     expect(input).toBeTruthy();
 
     await waitFor(() => {

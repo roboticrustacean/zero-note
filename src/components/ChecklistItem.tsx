@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
+import { CheckIcon } from './Icons';
 
 interface ChecklistItemProps {
   text: string;
@@ -42,12 +43,12 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({
         style={[
           styles.checkbox,
           {
-            borderColor: checked ? theme.textMuted : theme.text,
-            backgroundColor: checked ? theme.textMuted : 'transparent',
+            borderColor: checked ? theme.accent : theme.textMuted,
+            backgroundColor: checked ? theme.accent : 'transparent',
           },
         ]}
       >
-        {checked && <Text style={[styles.checkmark, { color: theme.canvas }]}>✓</Text>}
+        {checked && <CheckIcon size={11} color={theme.accentText} strokeWidth={2.5} />}
       </View>
       <Text
         style={[
@@ -69,25 +70,22 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+    gap: 12,
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 3,
-    borderWidth: 1.5,
+    width: 17,
+    height: 17,
+    borderRadius: 4,
+    borderWidth: 1.2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
-  checkmark: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    lineHeight: 14,
+    marginTop: 4,
   },
   text: {
     flex: 1,
-    lineHeight: 24,
+    lineHeight: 25,
+    letterSpacing: -0.2,
   },
 });

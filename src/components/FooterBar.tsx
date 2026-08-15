@@ -18,9 +18,9 @@ export const FooterBar: React.FC<FooterBarProps> = ({ stats, isSaving, visible =
   const charLabel = stats.chars === 1 ? 'char' : 'chars';
 
   return (
-    <View style={[styles.container, { borderTopColor: theme.borderSubtle }]}>
+    <View style={styles.container}>
       <Text style={[styles.statsText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
-        {stats.words} {wordLabel} · {stats.chars} {charLabel}
+        {stats.words} {wordLabel}  ·  {stats.chars} {charLabel}
       </Text>
 
       <Text style={[styles.statusText, { color: theme.textMuted, fontFamily, fontSize: typeScale.caption }]}>
@@ -35,15 +35,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopWidth: 1,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    opacity: 0.6,
   },
   statsText: {
-    letterSpacing: -0.2,
+    letterSpacing: 0.2,
   },
   statusText: {
-    letterSpacing: -0.2,
-    opacity: 0.8,
+    letterSpacing: 0.2,
   },
 });
