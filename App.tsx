@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Modal, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { NotesProvider, useNotes } from './src/context/NotesContext';
 import { EditorScreen } from './src/screens/EditorScreen';
 import { ArchiveScreen } from './src/screens/ArchiveScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { FluidModal } from './src/components/FluidModal';
 import { notificationService } from './src/services/notificationService';
 
 const MainApp: React.FC = () => {
@@ -37,29 +38,23 @@ const MainApp: React.FC = () => {
           onOpenArchive={() => setIsArchiveOpen(true)}
         />
 
-        {/* Archive Modal */}
-        <Modal
+        {/* Fluid Spring Archive Modal */}
+        <FluidModal
           visible={isArchiveOpen}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setIsArchiveOpen(false)}
+          onClose={() => setIsArchiveOpen(false)}
+          variant="sheet"
         >
-          <View style={[styles.modalFrame, { backgroundColor: theme.canvas }]}>
-            <ArchiveScreen onClose={() => setIsArchiveOpen(false)} />
-          </View>
-        </Modal>
+          <ArchiveScreen onClose={() => setIsArchiveOpen(false)} />
+        </FluidModal>
 
-        {/* Settings Modal */}
-        <Modal
+        {/* Fluid Spring Settings Modal */}
+        <FluidModal
           visible={isSettingsOpen}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setIsSettingsOpen(false)}
+          onClose={() => setIsSettingsOpen(false)}
+          variant="sheet"
         >
-          <View style={[styles.modalFrame, { backgroundColor: theme.canvas }]}>
-            <SettingsScreen onClose={() => setIsSettingsOpen(false)} />
-          </View>
-        </Modal>
+          <SettingsScreen onClose={() => setIsSettingsOpen(false)} />
+        </FluidModal>
       </View>
     </View>
   );
@@ -90,12 +85,5 @@ const styles = StyleSheet.create({
     maxWidth: Platform.OS === 'web' ? 520 : undefined,
     borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
     borderRightWidth: Platform.OS === 'web' ? 1 : 0,
-  },
-  modalFrame: {
-    flex: 1,
-    height: '100%',
-    width: '100%',
-    maxWidth: Platform.OS === 'web' ? 520 : undefined,
-    alignSelf: 'center',
   },
 });

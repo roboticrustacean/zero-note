@@ -17,19 +17,16 @@ async function checkBrowser() {
   await page.goto('http://localhost:8081', { waitUntil: 'networkidle', timeout: 15000 });
   await page.waitForTimeout(1000);
 
-  // Type some sample markdown note to see the full UI in action
-  const editor = page.locator('textarea, input[data-testid="note-editor-input"]').first();
-  if (await editor.count() > 0) {
-    await editor.click();
-    await editor.fill(
-      `Ship the Android clone today.\n\n- [x] Research Mononote aesthetic\n- [ ] Design persistent lock screen channel\n- [ ] Add home screen widget\n\nPure single-note focus.`
-    );
+  // Click Settings icon to test fluid modal animation
+  const settingsBtn = page.locator('[data-testid="btn-settings"]').first();
+  if (await settingsBtn.count() > 0) {
+    console.log('Clicking Settings button...');
+    await settingsBtn.click();
+    await page.waitForTimeout(600); // allow spring animation to settle
   }
 
-  await page.waitForTimeout(1500);
-
-  await page.screenshot({ path: 'screenshot.png' });
-  console.log('Screenshot updated in screenshot.png');
+  await page.screenshot({ path: 'screenshot_modal.png' });
+  console.log('Modal screenshot saved to screenshot_modal.png');
 
   await browser.close();
 }

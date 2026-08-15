@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
 import { CheckIcon } from './Icons';
+import { safeHaptics } from '../utils/haptics';
 
 interface ChecklistItemProps {
   text: string;
@@ -21,11 +21,7 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({
 
   const handlePress = () => {
     if (hapticsEnabled) {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch {
-        // ignore on unsupported platforms
-      }
+      safeHaptics.impact();
     }
     onToggle();
   };

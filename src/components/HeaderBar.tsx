@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Share } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
 import { SettingsIcon, HistoryIcon, PinIcon, ShareIcon, ArchiveIcon } from './Icons';
+import { safeHaptics } from '../utils/haptics';
 
 interface HeaderBarProps {
   isPinned: boolean;
@@ -39,11 +39,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
   const triggerHaptic = () => {
     if (hapticsEnabled) {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch {
-        // ignore
-      }
+      safeHaptics.impact();
     }
   };
 
@@ -119,11 +115,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <TouchableOpacity
           onPress={() => {
             if (hapticsEnabled) {
-              try {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              } catch {
-                // ignore
-              }
+              safeHaptics.notification();
             }
             onArchive();
           }}

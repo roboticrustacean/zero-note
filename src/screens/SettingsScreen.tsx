@@ -10,12 +10,12 @@ import {
   Switch,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
 import { useNotes } from '../context/NotesContext';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { FontSelector } from '../components/FontSelector';
 import { CloseIcon } from '../components/Icons';
+import { safeHaptics } from '../utils/haptics';
 
 interface SettingsScreenProps {
   onClose: () => void;
@@ -27,11 +27,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   const triggerHaptic = () => {
     if (preferences.hapticsEnabled) {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch {
-        // ignore
-      }
+      safeHaptics.impact();
     }
   };
 

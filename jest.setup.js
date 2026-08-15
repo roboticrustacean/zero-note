@@ -18,6 +18,10 @@ jest.mock('react-native', () => {
     StyleSheet: {
       create: (styles) => styles,
       flatten: (styles) => (Array.isArray(styles) ? Object.assign({}, ...styles) : styles || {}),
+      absoluteFillObject: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+    },
+    Dimensions: {
+      get: jest.fn(() => ({ width: 400, height: 800 })),
     },
     Share: {
       share: jest.fn(async () => ({ action: 'sharedAction' })),
@@ -27,12 +31,26 @@ jest.mock('react-native', () => {
         // mock alert
       }),
     },
+    Animated: {
+      Value: jest.fn((val) => ({
+        interpolate: jest.fn(() => 0),
+        setValue: jest.fn(),
+      })),
+      spring: jest.fn(() => ({
+        start: (cb) => cb && cb({ finished: true }),
+      })),
+      timing: jest.fn(() => ({
+        start: (cb) => cb && cb({ finished: true }),
+      })),
+      View: createMockComponent('Animated.View'),
+    },
     View: createMockComponent('View'),
     Text: createMockComponent('Text'),
     TextInput: React.forwardRef((props, ref) =>
       React.createElement('TextInput', { ...props, ref }, props.children)
     ),
     TouchableOpacity: createMockComponent('TouchableOpacity'),
+    TouchableWithoutFeedback: createMockComponent('TouchableWithoutFeedback'),
     ScrollView: createMockComponent('ScrollView'),
     Modal: createMockComponent('Modal'),
     KeyboardAvoidingView: createMockComponent('KeyboardAvoidingView'),

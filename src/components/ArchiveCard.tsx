@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../theme/ThemeContext';
 import { Note } from '../types/note';
 import { calculateNoteStats, formatTimeAgo } from '../utils/markdownParser';
 import { RestoreIcon, CopyIcon, TrashIcon } from './Icons';
+import { safeHaptics } from '../utils/haptics';
 
 interface ArchiveCardProps {
   note: Note;
@@ -29,11 +29,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({
 
   const triggerHaptic = () => {
     if (hapticsEnabled) {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch {
-        // ignore
-      }
+      safeHaptics.impact();
     }
   };
 
