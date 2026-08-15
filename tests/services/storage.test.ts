@@ -6,11 +6,11 @@ describe('StorageService', () => {
   });
 
   it('saves and retrieves active note', async () => {
-    const note = await storageService.saveActiveNote('Buy groceries\n- [ ] Milk');
-    expect(note.content).toBe('Buy groceries\n- [ ] Milk');
+    const note = await storageService.saveActiveNote('Buy groceries\n- Milk');
+    expect(note.content).toBe('Buy groceries\n- Milk');
 
     const retrieved = await storageService.getActiveNote();
-    expect(retrieved.content).toBe('Buy groceries\n- [ ] Milk');
+    expect(retrieved.content).toBe('Buy groceries\n- Milk');
   });
 
   it('archives active note and resets active note to blank', async () => {

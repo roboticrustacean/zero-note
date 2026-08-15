@@ -8,16 +8,15 @@ const STORAGE_KEYS = {
   PREFERENCES: '@zeronote:preferences',
 };
 
-export const ONBOARDING_NOTE_CONTENT = `# Ø Zero Note
+export const ONBOARDING_NOTE_CONTENT = `Ø Zero Note
 
-One active thought at a time.
+- One active note at a time
+- Everything saves automatically
+- Pin keeps this note on your lock screen
+- Archive saves and clears the canvas
+- History searches past archived notes
 
-- [ ] Write down what matters right now
-- [ ] Tap 📌 to pin this note to your Lock Screen
-- [ ] Tap 🗄️ Archive to wipe canvas for your next note
-- [ ] Tap 🕒 to search or restore previous notes
-
-Everything saves locally & instantly.`;
+Tap Ø above for preferences and backup.`;
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

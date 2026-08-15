@@ -76,7 +76,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
 
   const handleReloadGuide = () => {
     triggerHaptic();
-    Alert.alert('Reload Guide Note', 'Restore the initial checklist guide note into your active canvas?', [
+    Alert.alert('Reload Guide Note', 'Restore the initial guide note into your active canvas?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Reload Guide',
@@ -157,7 +157,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
           </Text>
           <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.infoText, { color: theme.textSecondary, fontFamily, fontSize: typeScale.caption }]}>
-              Tap the 📌 icon in the top header to keep your single active note pinned on your Android Lock Screen.
+              Tap the pin icon in the top header to keep your single active note pinned on your Android Lock Screen.
             </Text>
           </View>
         </View>
