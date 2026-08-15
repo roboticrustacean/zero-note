@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
   Switch,
+  Platform,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../theme/ThemeContext';
@@ -51,6 +52,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
       return;
     }
 
+    if (Platform.OS === 'web') {
+      const ok = window.confirm('Restore notes from backup?');
+      if (ok) {
+        const success = await importData(text);
+        if (success) {
+          window.alert('Backup restored successfully.');
+        } else {
+          window.alert('Could not parse backup.');
+        }
+      }
+      return;
+    }
+
     Alert.alert('Import Backup', 'Restore notes from backup?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -67,8 +81,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
     ]);
   };
 
-  const handleReloadGuide = () => {
+  const handleReloadGuide = async () => {
     triggerHaptic();
+    if (Platform.OS === 'web') {
+      const ok = window.confirm('Restore the initial guide note?');
+      if (ok) {
+        await reloadOnboardingNote();
+        onClose();
+      }
+      return;
+    }
+
     Alert.alert('Reload Guide', 'Restore the initial guide note?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -81,8 +104,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onClose }) => {
     ]);
   };
 
-  const handleClearCurrent = () => {
+  const handleClearCurrent = async () => {
     triggerHaptic();
+    if (Platform.OS === 'web') {
+      const ok = window.confirm('Archive current note and start fresh?');
+      if (ok) {
+        await clearCurrentNote();
+        onClose();
+      }
+      return;
+    }
+
     Alert.alert('Clear Canvas', 'Archive current note and start fresh?', [
       { text: 'Cancel', style: 'cancel' },
       {

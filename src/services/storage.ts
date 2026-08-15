@@ -10,13 +10,13 @@ const STORAGE_KEYS = {
 
 export const ONBOARDING_NOTE_CONTENT = `Ø Zero Note
 
-- One active note at a time
-- Everything saves automatically
-- Pin keeps this note on your lock screen
-- Archive saves and clears the canvas
-- History searches past archived notes
+- [ ] Double tap canvas to create a task
+- [ ] Tap checkbox to mark as done
+- [ ] Tap archive above to start fresh
+- [ ] Tap history above to search past notes
 
-Tap Ø above for preferences and backup.`;
+Everything saves automatically.
+Tap Ø above for settings and backup.`;
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -37,20 +37,20 @@ export class StorageService {
       content: ONBOARDING_NOTE_CONTENT,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPinned: false,
+      isPinned: true,
     };
     await this.saveActiveNote(defaultNote.content, defaultNote.isPinned, defaultNote.id);
     return defaultNote;
   }
 
-  async saveActiveNote(content: string, isPinned = false, id?: string): Promise<Note> {
+  async saveActiveNote(content: string, isPinned = true, id?: string): Promise<Note> {
     const existing = await this.getActiveNoteSafe();
     const note: Note = {
       id: id || existing?.id || generateId(),
       content,
       createdAt: existing?.createdAt || Date.now(),
       updatedAt: Date.now(),
-      isPinned: isPinned !== undefined ? isPinned : existing?.isPinned || false,
+      isPinned: isPinned !== undefined ? isPinned : existing?.isPinned ?? true,
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(note));
     return note;
@@ -87,7 +87,7 @@ export class StorageService {
       content: '',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPinned: active.isPinned,
+      isPinned: true,
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(newActive));
     return archivedNote;
@@ -116,7 +116,7 @@ export class StorageService {
       content: target.content,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPinned: target.isPinned || false,
+      isPinned: true,
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(restoredNote));
     return restoredNote;
@@ -147,19 +147,30 @@ export class StorageService {
       content: '',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPinned: active.isPinned,
+      isPinned: true,
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(cleared));
     return cleared;
   }
 
   async reloadOnboardingNote(): Promise<Note> {
+    const active = await this.getActiveNoteSafe();
+    if (active && active.content.trim().length > 0 && active.content !== ONBOARDING_NOTE_CONTENT) {
+      const archived = await this.getArchivedNotes();
+      const archivedNote: Note = {
+        ...active,
+        archivedAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      await AsyncStorage.setItem(STORAGE_KEYS.ARCHIVED_NOTES, JSON.stringify([archivedNote, ...archived]));
+    }
+
     const note: Note = {
       id: generateId(),
       content: ONBOARDING_NOTE_CONTENT,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPinned: false,
+      isPinned: true,
     };
     await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_NOTE, JSON.stringify(note));
     return note;
