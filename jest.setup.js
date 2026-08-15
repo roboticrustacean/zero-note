@@ -23,6 +23,11 @@ jest.mock('react-native', () => {
     Dimensions: {
       get: jest.fn(() => ({ width: 400, height: 800 })),
     },
+    PanResponder: {
+      create: jest.fn(() => ({
+        panHandlers: {},
+      })),
+    },
     Share: {
       share: jest.fn(async () => ({ action: 'sharedAction' })),
     },

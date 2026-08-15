@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Share, Alert } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Share } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { ZeroLogo, SettingsIcon, PinIcon, ShareIcon, TrashIcon } from './Icons';
+import { ZeroLogo, SettingsIcon, HistoryIcon, PinIcon, ShareIcon, ArchiveIcon } from './Icons';
 import { safeHaptics } from '../utils/haptics';
 
 interface HeaderBarProps {
   isPinned: boolean;
   onTogglePin: () => void;
-  onClearNote: () => void;
+  onArchive: () => void;
   onOpenSettings: () => void;
+  onOpenArchive: () => void;
   noteContent: string;
   hapticsEnabled?: boolean;
 }
@@ -16,8 +17,9 @@ interface HeaderBarProps {
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   isPinned,
   onTogglePin,
-  onClearNote,
+  onArchive,
   onOpenSettings,
+  onOpenArchive,
   noteContent,
   hapticsEnabled = true,
 }) => {
@@ -35,38 +37,37 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   };
 
-  const handleClear = () => {
-    if (!noteContent || noteContent.trim().length === 0) return;
-    triggerHaptic();
-    Alert.alert('Clear Note', 'Are you sure you want to clear your current note?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: onClearNote,
-      },
-    ]);
-  };
-
   const triggerHaptic = () => {
     if (hapticsEnabled) {
       safeHaptics.impact();
     }
   };
 
+  const hasContent = noteContent.trim().length > 0;
+
   return (
     <View style={styles.container}>
-      {/* Left side: Iconic Ø logo mark & app branding */}
+      {/* Left side: Iconic Ø logo mark & Archive History drawer */}
       <View style={styles.leftGroup}>
         <View style={styles.logoMarkWrapper} testID="app-logo-mark">
           <ZeroLogo size={20} color={theme.text} strokeWidth={2} />
         </View>
-        <Text style={[styles.brandTitle, { color: theme.text, fontFamily }]}>
-          Zero Note
-        </Text>
+
+        <TouchableOpacity
+          onPress={() => {
+            triggerHaptic();
+            onOpenArchive();
+          }}
+          style={styles.ghostButton}
+          accessibilityLabel="Archived Notes"
+          testID="btn-history"
+          activeOpacity={0.6}
+        >
+          <HistoryIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
+        </TouchableOpacity>
       </View>
 
-      {/* Right side: Lock Screen Pin, Share, Clear, Settings */}
+      {/* Right side: Lock Screen Pin, Share, Archive, Settings */}
       <View style={styles.rightGroup}>
         <TouchableOpacity
           onPress={() => {
@@ -89,32 +90,56 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           />
         </TouchableOpacity>
 
-        {noteContent.trim().length > 0 && (
-          <>
-            <TouchableOpacity
-              onPress={() => {
-                triggerHaptic();
-                handleShare();
-              }}
-              style={styles.iconButton}
-              accessibilityLabel="Share note"
-              testID="btn-share"
-              activeOpacity={0.6}
-            >
-              <ShareIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleClear}
-              style={styles.iconButton}
-              accessibilityLabel="Clear note"
-              testID="btn-clear"
-              activeOpacity={0.6}
-            >
-              <TrashIcon size={17} color={theme.textMuted} strokeWidth={1.4} />
-            </TouchableOpacity>
-          </>
+        {hasContent && (
+          <TouchableOpacity
+            onPress={() => {
+              triggerHaptic();
+              handleShare();
+            }}
+            style={styles.iconButton}
+            accessibilityLabel="Share note"
+            testID="btn-share"
+            activeOpacity={0.6}
+          >
+            <ShareIcon size={18} color={theme.textMuted} strokeWidth={1.4} />
+          </TouchableOpacity>
         )}
+
+        {/* Mononote Archive Action: Archives current note & clears canvas */}
+        <TouchableOpacity
+          onPress={() => {
+            if (!hasContent) return;
+            if (hapticsEnabled) {
+              safeHaptics.notification();
+            }
+            onArchive();
+          }}
+          style={[
+            styles.archiveBadge,
+            {
+              backgroundColor: hasContent ? theme.card : 'transparent',
+              borderColor: hasContent ? theme.border : 'transparent',
+              opacity: hasContent ? 1 : 0.4,
+            },
+          ]}
+          disabled={!hasContent}
+          accessibilityLabel="Archive note"
+          testID="btn-archive"
+          activeOpacity={0.7}
+        >
+          <ArchiveIcon size={14} color={hasContent ? theme.text : theme.textMuted} strokeWidth={1.5} />
+          <Text
+            style={[
+              styles.archiveLabel,
+              {
+                color: hasContent ? theme.text : theme.textMuted,
+                fontFamily,
+              },
+            ]}
+          >
+            Archive
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => {
@@ -138,9 +163,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 26,
-    paddingTop: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 12,
   },
   leftGroup: {
     flexDirection: 'row',
@@ -148,16 +173,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoMarkWrapper: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: -0.3,
-    opacity: 0.85,
+  ghostButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
   },
   rightGroup: {
     flexDirection: 'row',
@@ -165,10 +191,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconButton: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 6,
+  },
+  archiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  archiveLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: -0.2,
   },
 });

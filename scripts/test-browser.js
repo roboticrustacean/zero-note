@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 
 async function checkBrowser() {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 850 } });
   const page = await context.newPage();
 
   page.on('console', (msg) => {
@@ -17,26 +17,35 @@ async function checkBrowser() {
   await page.goto('http://localhost:8081', { waitUntil: 'networkidle', timeout: 15000 });
   await page.waitForTimeout(1000);
 
-  // Type note content
+  // Type note content into the floating window
   const editor = page.locator('textarea, input[data-testid="note-editor-input"]').first();
   if (await editor.count() > 0) {
     await editor.click();
     await editor.fill(
-      `Ø Zero Note\n\n- [x] Radical single-note minimalism\n- [ ] Slashed zero logo identity\n- [ ] Zero distractions, pure focus`
+      `Ø Floating Window Mode\n\n- [x] Mononote instant Archive flow\n- [x] Resizable desktop window\n- [ ] Focus on one active thought`
     );
   }
 
   await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'screenshot_zero_minimal.png' });
-  console.log('Main screen saved to screenshot_zero_minimal.png');
+  await page.screenshot({ path: 'screenshot_floating_window.png' });
+  console.log('Floating window screenshot saved to screenshot_floating_window.png');
 
-  // Open Settings to verify streamlined preferences
-  const settingsBtn = page.locator('[data-testid="btn-settings"]').first();
-  if (await settingsBtn.count() > 0) {
-    await settingsBtn.click();
+  // Test Archive button click
+  const archiveBtn = page.locator('[data-testid="btn-archive"]').first();
+  if (await archiveBtn.count() > 0) {
+    console.log('Clicking Archive button...');
+    await archiveBtn.click();
+    await page.waitForTimeout(800);
+  }
+
+  // Open Archive drawer to verify archived note
+  const historyBtn = page.locator('[data-testid="btn-history"]').first();
+  if (await historyBtn.count() > 0) {
+    console.log('Clicking History button...');
+    await historyBtn.click();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'screenshot_zero_settings.png' });
-    console.log('Settings screen saved to screenshot_zero_settings.png');
+    await page.screenshot({ path: 'screenshot_floating_archive.png' });
+    console.log('Archive drawer screenshot saved to screenshot_floating_archive.png');
   }
 
   await browser.close();

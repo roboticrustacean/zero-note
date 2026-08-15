@@ -5,13 +5,14 @@ import { ThemeProvider } from '../../src/theme/ThemeContext';
 import { NotesProvider } from '../../src/context/NotesContext';
 
 describe('EditorScreen', () => {
-  it('renders editor with Ø branding and allows typing', async () => {
+  it('renders editor with Ø branding, history, archive, and settings', async () => {
     const onOpenSettings = jest.fn();
+    const onOpenArchive = jest.fn();
 
     const { findByPlaceholderText, getByTestId } = render(
       <ThemeProvider>
         <NotesProvider>
-          <EditorScreen onOpenSettings={onOpenSettings} />
+          <EditorScreen onOpenSettings={onOpenSettings} onOpenArchive={onOpenArchive} />
         </NotesProvider>
       </ThemeProvider>
     );
@@ -26,5 +27,10 @@ describe('EditorScreen', () => {
     const settingsBtn = getByTestId('btn-settings');
     fireEvent.press(settingsBtn);
     expect(onOpenSettings).toHaveBeenCalled();
+
+    // Test archive history button
+    const historyBtn = getByTestId('btn-history');
+    fireEvent.press(historyBtn);
+    expect(onOpenArchive).toHaveBeenCalled();
   });
 });
