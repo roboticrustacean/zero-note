@@ -102,6 +102,7 @@ export const Editor: React.FC<EditorProps> = ({
               fontFamily,
               fontSize: typeScale.editor,
               lineHeight: typeScale.editor * 1.6,
+              ...(Platform.OS === 'web' ? ({ outlineStyle: 'none', outlineWidth: 0 } as any) : {}),
             },
           ]}
           textAlignVertical="top"
